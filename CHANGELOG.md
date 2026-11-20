@@ -10,3 +10,6 @@
 
 ## 0.1.2
 - Protection line now reads Create: Lanterns ring life support and Ad Astra suit oxygen state (display only).
+
+## 0.1.3
+- Protection computed on the server and synced to the HUD; detects Giselle Addon oxygen proof.

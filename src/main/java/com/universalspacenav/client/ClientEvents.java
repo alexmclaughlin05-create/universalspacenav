@@ -95,7 +95,7 @@ public final class ClientEvents {
                 Component.translatable("universalspacenav.hud.method", Component.translatable(method(p))),
                 Component.translatable("universalspacenav.hud.entry", entry),
                 Component.translatable("universalspacenav.hud.altitude", (int) p.getY()),
-                Component.translatable("universalspacenav.hud.protection", Component.translatable(ProtectionStatus.of(p))),
+                Component.translatable("universalspacenav.hud.protection", Component.translatable(ProtectionStatus.key(ClientState.protection))),
         };
         for (int i = 0; i < lines.length; i++) {
             g.drawString(font, lines[i], px, py + i * 10, i == 0 ? 0xFFFFD27F : 0xFFFFFFFF, true);

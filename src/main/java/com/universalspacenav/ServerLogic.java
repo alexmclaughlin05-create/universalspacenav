@@ -2,6 +2,7 @@ package com.universalspacenav;
 
 import com.universalspacenav.net.CycleModePayload;
 import com.universalspacenav.net.SyncModePayload;
+import com.universalspacenav.net.SyncProtectionPayload;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -25,6 +26,7 @@ public final class ServerLogic {
     private static final Map<UUID, Long> LAST_SWITCH = new ConcurrentHashMap<>();
     private static final Map<UUID, Long> LAST_MENU = new ConcurrentHashMap<>();
     /** Players who already got a menu on this ascent; cleared when they come back down. */
+    private static final Map<UUID, Integer> LAST_PROTECTION = new ConcurrentHashMap<>();
     private static final Map<UUID, Boolean> MENU_SHOWN = new ConcurrentHashMap<>();
 
     private ServerLogic() {
@@ -58,6 +60,8 @@ public final class ServerLogic {
             PayloadRegistrar r = e.registrar("1");
             r.playToClient(SyncModePayload.TYPE, SyncModePayload.CODEC, (payload, ctx) ->
                     ctx.enqueueWork(() -> com.universalspacenav.client.ClientState.mode = NavMode.byOrdinal(payload.mode())));
+            r.playToClient(SyncProtectionPayload.TYPE, SyncProtectionPayload.CODEC, (payload, ctx) ->
+                    ctx.enqueueWork(() -> com.universalspacenav.client.ClientState.protection = payload.code()));
             r.playToServer(CycleModePayload.TYPE, CycleModePayload.CODEC, (payload, ctx) ->
                     ctx.enqueueWork(() -> {
                         if (ctx.player() instanceof ServerPlayer sp) cycle(sp);
@@ -88,12 +92,14 @@ public final class ServerLogic {
             LAST_SWITCH.remove(id);
             LAST_MENU.remove(id);
             MENU_SHOWN.remove(id);
+            LAST_PROTECTION.remove(id);
         }
 
         @SubscribeEvent
         public static void onTick(PlayerTickEvent.Post e) {
             if (!(e.getEntity() instanceof ServerPlayer sp)) return;
             if (sp.tickCount % 5 != 0) return;
+            tickProtection(sp);
             tickPlayer(sp);
         }
     }
@@ -109,6 +115,19 @@ public final class ServerLogic {
         sync(p);
         p.displayClientMessage(Component.translatable("universalspacenav.message.mode",
                 Component.translatable(next.translationKey())), true);
+    }
+
+    /** Display only: tell the client what protection the server currently finds. Changes nothing. */
+    private static void tickProtection(ServerPlayer p) {
+        try {
+            int code = com.universalspacenav.client.ProtectionStatus.compute(p);
+            Integer last = LAST_PROTECTION.put(p.getUUID(), code);
+            if (last == null || last != code) {
+                PacketDistributor.sendToPlayer(p, new SyncProtectionPayload(code));
+            }
+        } catch (Throwable t) {
+            if (UsnConfig.COMMON.debug.get()) UniversalSpaceNavigation.LOGGER.warn("protection check failed", t);
+        }
     }
 
     private static void tickPlayer(ServerPlayer p) {

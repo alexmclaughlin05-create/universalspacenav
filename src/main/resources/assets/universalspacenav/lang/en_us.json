@@ -22,5 +22,6 @@
   "universalspacenav.protection.suit_ok": "Ad Astra suit, oxygen OK",
   "universalspacenav.protection.suit_empty": "Ad Astra suit, NO oxygen",
   "universalspacenav.protection.partial": "Ad Astra suit (incomplete)",
-  "universalspacenav.protection.none": "none detected"
+  "universalspacenav.protection.none": "none active right now",
+  "universalspacenav.protection.addon": "Giselle Addon oxygen proof (active)"
 }
