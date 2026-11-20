@@ -30,9 +30,10 @@ import java.util.concurrent.ConcurrentHashMap;
  *    so a player already protected by a suit, ring, Giselle Addon, etc. never touches our reserve or energy.
  */
 public final class SpaceProtection {
-    public static final int SRC_NONE = 0, SRC_VILT = 1, SRC_MARVEL = 2;
+    public static final int SRC_NONE = 0, SRC_VILT = 1, SRC_MARVEL = 2, SRC_EXO = 3, SRC_HERO = 4;
     // Bits sent to the HUD
-    public static final int B_VILT_PASSIVE = 1, B_VILT_AIR = 2, B_MARVEL_READY = 4, B_MARVEL_AIR = 8;
+    public static final int B_VILT_PASSIVE = 1, B_VILT_AIR = 2, B_MARVEL_READY = 4, B_MARVEL_AIR = 8,
+            B_EXO_READY = 16, B_EXO_AIR = 32, B_HERO = 64;
 
     private static final Map<UUID, long[]> USED = new ConcurrentHashMap<>(); // {gameTime, source}
 
@@ -118,7 +119,7 @@ public final class SpaceProtection {
         return v < 0 ? max : Math.min(v, max);
     }
 
-    private static void setReserve(ServerPlayer p, int v) {
+    public static void setReserve(ServerPlayer p, int v) {
         p.setData(UsnAttachments.OXYGEN, Math.max(0, Math.min(reserveMax(), v)));
     }
 
@@ -181,6 +182,114 @@ public final class SpaceProtection {
         if (e != null) chest.set(energyType, Math.max(0f, e - amount));
     }
 
+    // ---------------------------------------------------------------- Neural Exosuit accessory (Curios)
+
+    private static Method curiosGetInv, curiosFind;
+    private static boolean curiosLooked;
+    private static Method coreStack, coreEnergy, coreTotal, totalStored, totalCapacity, exoSpend;
+    private static boolean exoLooked;
+
+    private static boolean wearsExoAccessory(ServerPlayer p) {
+        try {
+            if (!curiosLooked) {
+                curiosLooked = true;
+                Class<?> api = Class.forName("top.theillusivec4.curios.api.CuriosApi");
+                curiosGetInv = api.getMethod("getCuriosInventory", net.minecraft.world.entity.LivingEntity.class);
+                Class<?> handler = Class.forName("top.theillusivec4.curios.api.type.capability.ICuriosItemHandler");
+                curiosFind = handler.getMethod("findFirstCurio", Item.class);
+            }
+            if (curiosGetInv == null) return false;
+            java.util.Optional<?> inv = (java.util.Optional<?>) curiosGetInv.invoke(null, p);
+            if (inv.isEmpty()) return false;
+            java.util.Optional<?> found = (java.util.Optional<?>) curiosFind.invoke(inv.get(), com.universalspacenav.UsnItems.EXOSUIT_LIFE_SUPPORT.get());
+            return found.isPresent();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    private static void lookExo() {
+        if (exoLooked) return;
+        exoLooked = true;
+        try {
+            Class<?> cs = Class.forName("com.hunterarmor.CoreStorage");
+            coreStack = cs.getMethod("coreStack", net.minecraft.world.entity.LivingEntity.class);
+            coreEnergy = cs.getMethod("energy", ItemStack.class);
+            coreTotal = cs.getMethod("energyTotal", ItemStack.class);
+            Class<?> tot = Class.forName("com.hunterarmor.CoreStorage$EnergyTotal");
+            totalStored = tot.getMethod("stored");
+            totalCapacity = tot.getMethod("capacity");
+            exoSpend = Class.forName("com.hunterarmor.Energy").getMethod("spend", ServerPlayer.class, int.class);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    /** {stored, capacity} of the worn Neural Exosuit, or null if none / unreadable. */
+    private static long[] exoEnergy(ServerPlayer p) {
+        lookExo();
+        if (coreStack == null) return null;
+        try {
+            ItemStack core = (ItemStack) coreStack.invoke(null, p);
+            if (core == null || core.isEmpty()) return null;
+            Object tot = coreTotal.invoke(null, core);
+            return new long[]{(Long) totalStored.invoke(tot), (Long) totalCapacity.invoke(tot)};
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    /** Accessory worn AND the exosuit has energy. */
+    public static boolean exoReady(ServerPlayer p) {
+        if (!UsnConfig.COMMON.exo.get() || !wearsExoAccessory(p)) return false;
+        long[] e = exoEnergy(p);
+        return e != null && e[0] > 0;
+    }
+
+    /** For the HUD: exosuit energy when the accessory is worn, else null. */
+    public static long[] exoHud(ServerPlayer p) {
+        if (!UsnConfig.COMMON.exo.get() || !wearsExoAccessory(p)) return null;
+        return exoEnergy(p);
+    }
+
+    private static void drainExo(ServerPlayer p, int amount) {
+        lookExo();
+        if (amount <= 0 || exoSpend == null) return;
+        try {
+            exoSpend.invoke(null, p, amount);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    // ---------------------------------------------------------------- Integrated Superheroes powers (optional, off by default)
+
+    private static Method heroActive, heroId;
+    private static boolean heroLooked;
+
+    public static boolean heroListed(ServerPlayer p) {
+        if (!UsnConfig.COMMON.hero.get()) return false;
+        java.util.List<? extends String> list = UsnConfig.COMMON.heroPowers.get();
+        if (list.isEmpty()) return false;
+        try {
+            if (!heroLooked) {
+                heroLooked = true;
+                Class<?> hp = Class.forName("com.craisinlord.integrated_superheroes.hero.HeroPowers");
+                heroActive = hp.getMethod("activeHero", net.minecraft.world.entity.player.Player.class);
+                heroId = Class.forName("com.craisinlord.integrated_superheroes.hero.HeroPower").getMethod("id");
+            }
+            if (heroActive == null) return false;
+            Object power = heroActive.invoke(null, p);
+            if (power == null) return false;
+            String id = String.valueOf(heroId.invoke(power));
+            String bare = id.contains(":") ? id.substring(id.indexOf(':') + 1) : id;
+            for (String want : list) {
+                String w = want.contains(":") ? want.substring(want.indexOf(':') + 1) : want;
+                if (w.equalsIgnoreCase(bare)) return true;
+            }
+        } catch (Throwable ignored) {
+        }
+        return false;
+    }
+
     // ---------------------------------------------------------------- hooks (read-only)
 
     /**
@@ -195,6 +304,14 @@ public final class SpaceProtection {
             USED.put(p.getUUID(), new long[]{now, SRC_MARVEL});
             return true;
         }
+        if (exoReady(p)) {
+            USED.put(p.getUUID(), new long[]{now, SRC_EXO});
+            return true;
+        }
+        if (UsnConfig.COMMON.heroBreathing.get() && heroListed(p)) {
+            USED.put(p.getUUID(), new long[]{now, SRC_HERO});
+            return true;
+        }
         if (isViltrumite(p) && reserve(p) > 0) {
             USED.put(p.getUUID(), new long[]{now, SRC_VILT});
             return true;
@@ -204,11 +321,13 @@ public final class SpaceProtection {
 
     /** Cold / vacuum-exposure immunity (no consumption). */
     public static boolean vacuumResistant(ServerPlayer p) {
-        return UsnConfig.COMMON.viltVacuum.get() && isViltrumite(p);
+        return (UsnConfig.COMMON.viltVacuum.get() && isViltrumite(p))
+                || (UsnConfig.COMMON.heroVacuum.get() && heroListed(p));
     }
 
     public static boolean coldResistant(ServerPlayer p) {
-        return UsnConfig.COMMON.viltCold.get() && isViltrumite(p);
+        return (UsnConfig.COMMON.viltCold.get() && isViltrumite(p))
+                || (UsnConfig.COMMON.heroCold.get() && heroListed(p));
     }
 
     // ---------------------------------------------------------------- once-per-interval accounting
@@ -222,6 +341,11 @@ public final class SpaceProtection {
             drainMarvel(p, (float) (UsnConfig.COMMON.marvelEnergyPerSecond.get() * elapsed / 20.0));
             return;
         }
+        if (recent && u[1] == SRC_EXO) {
+            drainExo(p, Math.round(UsnConfig.COMMON.exoEnergyPerSecond.get() * elapsed / 20.0f));
+            return;
+        }
+        if (recent && u[1] == SRC_HERO) return; // free, no accounting
         if (!isViltrumite(p)) return;
         int cur = reserve(p);
         if (recent && u[1] == SRC_VILT) {
@@ -249,6 +373,11 @@ public final class SpaceProtection {
             bits |= B_MARVEL_READY;
             if (recent && u[1] == SRC_MARVEL) bits |= B_MARVEL_AIR;
         }
+        if (exoReady(p)) {
+            bits |= B_EXO_READY;
+            if (recent && u[1] == SRC_EXO) bits |= B_EXO_AIR;
+        }
+        if (UsnConfig.COMMON.hero.get() && heroListed(p)) bits |= B_HERO;
         return bits;
     }
 

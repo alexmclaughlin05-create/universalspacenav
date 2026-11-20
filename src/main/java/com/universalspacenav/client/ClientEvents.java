@@ -84,6 +84,14 @@ public final class ClientEvents {
         } else if ((bits & com.universalspacenav.protect.SpaceProtection.B_MARVEL_READY) != 0) {
             parts.add(Component.translatable("universalspacenav.src.marvel_ready"));
         }
+        if ((bits & com.universalspacenav.protect.SpaceProtection.B_EXO_AIR) != 0) {
+            parts.add(Component.translatable("universalspacenav.src.exo_air"));
+        } else if ((bits & com.universalspacenav.protect.SpaceProtection.B_EXO_READY) != 0) {
+            parts.add(Component.translatable("universalspacenav.src.exo_ready"));
+        }
+        if ((bits & com.universalspacenav.protect.SpaceProtection.B_HERO) != 0) {
+            parts.add(Component.translatable("universalspacenav.src.hero"));
+        }
         if ((bits & com.universalspacenav.protect.SpaceProtection.B_VILT_AIR) != 0) {
             parts.add(Component.translatable("universalspacenav.src.vilt_air"));
         } else if ((bits & com.universalspacenav.protect.SpaceProtection.B_VILT_PASSIVE) != 0) {
@@ -132,6 +140,9 @@ public final class ClientEvents {
         }
         if (ClientState.suitEnergy >= 0) {
             all.add(Component.translatable("universalspacenav.hud.energy", ClientState.suitEnergy));
+        }
+        if (ClientState.exoStored >= 0) {
+            all.add(Component.translatable("universalspacenav.hud.exo_energy", ClientState.exoStored, ClientState.exoCap));
         }
         for (int i = 0; i < all.size(); i++) {
             g.drawString(font, all.get(i), px, py + i * 10, i == 0 ? 0xFFFFD27F : 0xFFFFFFFF, true);

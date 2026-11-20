@@ -16,3 +16,6 @@
 
 ## 0.1.4
 - Viltrumite oxygen reserve, vacuum and cold resistance; sealed Marvel suit air; Arcana and Ad Astra hooks; HUD oxygen/energy/sources.
+
+## 0.1.5
+- Viltrumite Core native menu follows mode; Lanterns menu de-duplication; Exosuit Life-Support Module (Curios); optional superhero power list; persistence safeguards; /usn commands.

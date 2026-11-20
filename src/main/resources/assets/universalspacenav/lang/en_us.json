@@ -29,5 +29,12 @@
   "universalspacenav.src.vilt_air": "Viltrumite reserve (in use)",
   "universalspacenav.src.vilt_ready": "Viltrumite (reserve ready)",
   "universalspacenav.src.marvel_air": "Sealed suit (in use)",
-  "universalspacenav.src.marvel_ready": "Sealed suit (ready)"
+  "universalspacenav.src.marvel_ready": "Sealed suit (ready)",
+  "item.universalspacenav.exosuit_life_support": "Exosuit Life-Support Module",
+  "tooltip.universalspacenav.exosuit_life_support": "Wear in a Curios charm slot together with a Neural Exosuit. Supplies air in airless places, drawing energy from the exosuit.",
+  "universalspacenav.src.exo_air": "Exosuit life support (in use)",
+  "universalspacenav.src.exo_ready": "Exosuit life support (ready)",
+  "universalspacenav.src.hero": "Hero power",
+  "universalspacenav.hud.exo_energy": "Exosuit energy: %s / %s FE",
+  "universalspacenav.cmd.status": "Destination: %s | Viltrumite reserve: %s"
 }

@@ -4,6 +4,9 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
 public final class UsnConfig {
+    /** Who opens the Ad Astra planet menu for a Viltrumite in Ad Astra mode. */
+    public enum NativeTrigger { OURS, NATIVE }
+
     public static final ModConfigSpec COMMON_SPEC;
     public static final Common COMMON;
     public static final ModConfigSpec CLIENT_SPEC;
@@ -40,6 +43,15 @@ public final class UsnConfig {
         public final ModConfigSpec.ConfigValue<java.util.List<? extends String>> marvelTags;
         public final ModConfigSpec.BooleanValue marvelNeedHelmetClosed;
         public final ModConfigSpec.DoubleValue marvelEnergyPerSecond;
+        public final ModConfigSpec.EnumValue<NativeTrigger> viltTrigger;
+        public final ModConfigSpec.BooleanValue suppressLanterns;
+        public final ModConfigSpec.BooleanValue exo;
+        public final ModConfigSpec.IntValue exoEnergyPerSecond;
+        public final ModConfigSpec.BooleanValue hero;
+        public final ModConfigSpec.ConfigValue<java.util.List<? extends String>> heroPowers;
+        public final ModConfigSpec.BooleanValue heroBreathing;
+        public final ModConfigSpec.BooleanValue heroVacuum;
+        public final ModConfigSpec.BooleanValue heroCold;
 
         Common(ModConfigSpec.Builder b) {
             b.push("altitudes");
@@ -67,6 +79,14 @@ public final class UsnConfig {
             respectLanternsAdditions = b
                     .comment("Do not open a second planet menu if Create: Lanterns - Additions has already opened one on this ascent.")
                     .define("respectLanternsAdditions", true);
+            viltTrigger = b
+                    .comment("Viltrumite Core opens Ad Astra's planet menu by itself when a Viltrumite passes its own height (default 1500).",
+                            "In Arcana mode that is ALWAYS suppressed (Arcana does its own transition). Same while riding an Ad Astra rocket.",
+                            "In Ad Astra mode: OURS = suppress Core's menu and use this mod's menu at the Ad Astra altitude; NATIVE = let Core's menu open and do not open a second one.")
+                    .defineEnum("viltrumiteTriggerInAdAstraMode", NativeTrigger.OURS);
+            suppressLanterns = b
+                    .comment("In Arcana mode, stop Create: Lanterns - Additions from opening its Ad Astra planet menu for ring wearers.")
+                    .define("suppressLanternsMenuInArcanaMode", true);
             b.pop();
 
             debug = b.comment("Log extra information.").define("debug", false);
@@ -91,6 +111,21 @@ public final class UsnConfig {
             marvelNeedHelmetClosed = b.comment("The helmet must be closed for the suit to be sealed.").define("requireHelmetClosed", true);
             marvelEnergyPerSecond = b.comment("Extra suit energy used per second while the suit is supplying air. 0 = no extra cost (the suit's own flight costs are never changed). Every piece must still hold some energy.")
                     .defineInRange("energyPerSecond", 0.0D, 0.0D, 1000.0D);
+            b.pop();
+            b.push("neuralExosuitAccessory");
+            exo = b.comment("The Exosuit Life-Support Module (worn in a Curios charm slot) supplies air while a Neural Exosuit with energy is worn.")
+                    .define("enabled", true);
+            exoEnergyPerSecond = b.comment("Exosuit energy (FE) used per second while supplying air. Goes through the exosuit's own energy spending, so its Cell module discount applies.")
+                    .defineInRange("energyPerSecond", 20, 0, 1000000);
+            b.pop();
+            b.push("superheroPowers");
+            hero = b.comment("Lets the Integrated Superheroes powers listed below receive space protection. OFF by default.")
+                    .define("enabled", false);
+            heroPowers = b.comment("Power ids (Integrated Superheroes), e.g. \"binary_carol_danvers\", \"gamma_mutation_bruce_banner\". Empty by default. Nothing is granted to a power that is not listed.")
+                    .defineListAllowEmpty("powers", java.util.List.of(), () -> "binary_carol_danvers", o -> o instanceof String);
+            heroBreathing = b.comment("Listed powers breathe in airless places (no reserve, no cost).").define("breathing", true);
+            heroVacuum = b.comment("Listed powers ignore Arcana's vacuum exposure.").define("vacuumResistance", true);
+            heroCold = b.comment("Listed powers ignore Ad Astra's extreme cold.").define("extremeColdResistance", true);
             b.pop();
             b.pop();
         }

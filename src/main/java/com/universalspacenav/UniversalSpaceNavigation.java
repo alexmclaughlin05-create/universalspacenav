@@ -14,6 +14,7 @@ public final class UniversalSpaceNavigation {
 
     public UniversalSpaceNavigation(IEventBus modBus, ModContainer container) {
         UsnAttachments.TYPES.register(modBus);
+        UsnItems.ITEMS.register(modBus);
         container.registerConfig(ModConfig.Type.COMMON, UsnConfig.COMMON_SPEC);
         container.registerConfig(ModConfig.Type.CLIENT, UsnConfig.CLIENT_SPEC);
     }
