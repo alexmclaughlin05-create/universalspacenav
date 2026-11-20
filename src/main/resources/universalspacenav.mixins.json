@@ -4,7 +4,8 @@
   "package": "com.universalspacenav.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "ArcanaSpaceTravelMixin"
+    "ArcanaSpaceTravelMixin",
+    "ArcanaSpaceEnvironmentMixin"
   ],
   "injectors": {
     "defaultRequire": 0

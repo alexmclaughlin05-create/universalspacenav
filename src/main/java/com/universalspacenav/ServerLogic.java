@@ -61,7 +61,13 @@ public final class ServerLogic {
             r.playToClient(SyncModePayload.TYPE, SyncModePayload.CODEC, (payload, ctx) ->
                     ctx.enqueueWork(() -> com.universalspacenav.client.ClientState.mode = NavMode.byOrdinal(payload.mode())));
             r.playToClient(SyncProtectionPayload.TYPE, SyncProtectionPayload.CODEC, (payload, ctx) ->
-                    ctx.enqueueWork(() -> com.universalspacenav.client.ClientState.protection = payload.code()));
+                    ctx.enqueueWork(() -> {
+                        com.universalspacenav.client.ClientState.protection = payload.code();
+                        com.universalspacenav.client.ClientState.bits = payload.bits();
+                        com.universalspacenav.client.ClientState.reserve = payload.reserve();
+                        com.universalspacenav.client.ClientState.reserveMax = payload.reserveMax();
+                        com.universalspacenav.client.ClientState.suitEnergy = payload.suitEnergy();
+                    }));
             r.playToServer(CycleModePayload.TYPE, CycleModePayload.CODEC, (payload, ctx) ->
                     ctx.enqueueWork(() -> {
                         if (ctx.player() instanceof ServerPlayer sp) cycle(sp);
@@ -93,6 +99,7 @@ public final class ServerLogic {
             LAST_MENU.remove(id);
             MENU_SHOWN.remove(id);
             LAST_PROTECTION.remove(id);
+            com.universalspacenav.protect.SpaceProtection.forget(id);
         }
 
         @SubscribeEvent
@@ -117,13 +124,20 @@ public final class ServerLogic {
                 Component.translatable(next.translationKey())), true);
     }
 
-    /** Display only: tell the client what protection the server currently finds. Changes nothing. */
+    /** Account for our own sources once, then tell the client what the server finds (display only). */
     private static void tickProtection(ServerPlayer p) {
         try {
+            com.universalspacenav.protect.SpaceProtection.tick(p, 5);
             int code = com.universalspacenav.client.ProtectionStatus.compute(p);
-            Integer last = LAST_PROTECTION.put(p.getUUID(), code);
-            if (last == null || last != code) {
-                PacketDistributor.sendToPlayer(p, new SyncProtectionPayload(code));
+            int bits = com.universalspacenav.protect.SpaceProtection.hudBits(p);
+            boolean vilt = (bits & com.universalspacenav.protect.SpaceProtection.B_VILT_PASSIVE) != 0;
+            int reserve = vilt ? com.universalspacenav.protect.SpaceProtection.reserve(p) : -1;
+            int max = vilt ? com.universalspacenav.protect.SpaceProtection.reserveMax() : 0;
+            int suit = Math.round(com.universalspacenav.protect.SpaceProtection.marvelSuitEnergy(p));
+            int key = java.util.Objects.hash(code, bits, reserve / 20, suit);
+            Integer last = LAST_PROTECTION.put(p.getUUID(), key);
+            if (last == null || last != key) {
+                PacketDistributor.sendToPlayer(p, new SyncProtectionPayload(code, bits, reserve, max, suit));
             }
         } catch (Throwable t) {
             if (UsnConfig.COMMON.debug.get()) UniversalSpaceNavigation.LOGGER.warn("protection check failed", t);

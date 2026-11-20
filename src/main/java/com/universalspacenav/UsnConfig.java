@@ -31,6 +31,16 @@ public final class UsnConfig {
         public final ModConfigSpec.BooleanValue respectLanternsAdditions;
         public final ModConfigSpec.BooleanValue debug;
 
+        public final ModConfigSpec.BooleanValue vilt;
+        public final ModConfigSpec.IntValue viltReserveSeconds;
+        public final ModConfigSpec.IntValue viltRefillMultiplier;
+        public final ModConfigSpec.BooleanValue viltVacuum;
+        public final ModConfigSpec.BooleanValue viltCold;
+        public final ModConfigSpec.BooleanValue marvel;
+        public final ModConfigSpec.ConfigValue<java.util.List<? extends String>> marvelTags;
+        public final ModConfigSpec.BooleanValue marvelNeedHelmetClosed;
+        public final ModConfigSpec.DoubleValue marvelEnergyPerSecond;
+
         Common(ModConfigSpec.Builder b) {
             b.push("altitudes");
             arcanaAltitude = b
@@ -60,6 +70,29 @@ public final class UsnConfig {
             b.pop();
 
             debug = b.comment("Log extra information.").define("debug", false);
+
+            b.comment("Space protection. Each integration is independent. None of these ever apply to a player who is already protected by something else.").push("protection");
+            b.push("viltrumite");
+            vilt = b.comment("Players who have acquired the Viltrumite race (Viltrumite Core; also covers the Integrated Superheroes Omni-Man serum, which sets the same flag) get a breathing reserve in airless places.")
+                    .define("enabled", true);
+            viltReserveSeconds = b.comment("Length of the oxygen reserve in seconds (1800 = 30 minutes).")
+                    .defineInRange("oxygenReserveSeconds", 1800, 1, 86400);
+            viltRefillMultiplier = b.comment("Reserve seconds restored per real second while breathing normal air (10 = refills 30 minutes in 3 minutes).")
+                    .defineInRange("refillMultiplier", 10, 1, 1000);
+            viltVacuum = b.comment("Immune to Arcana's vacuum exposure (freezing) in space, even with an empty reserve.")
+                    .define("vacuumResistance", true);
+            viltCold = b.comment("Immune to Ad Astra's extreme-cold effect.")
+                    .define("extremeColdResistance", true);
+            b.pop();
+            b.push("marvelSuits");
+            marvel = b.comment("Sealed, powered Marvel Superheroes suits supply air in airless places.").define("enabled", true);
+            marvelTags = b.comment("Item tags of complete suits that count as space suits. Default is the suit family Marvel Superheroes itself treats as its space suit (Iron Man Mark 39).")
+                    .defineListAllowEmpty("suitTags", java.util.List.of("marvel:iron_man_mark_39_armor"), () -> "marvel:iron_man_mark_39_armor", o -> o instanceof String);
+            marvelNeedHelmetClosed = b.comment("The helmet must be closed for the suit to be sealed.").define("requireHelmetClosed", true);
+            marvelEnergyPerSecond = b.comment("Extra suit energy used per second while the suit is supplying air. 0 = no extra cost (the suit's own flight costs are never changed). Every piece must still hold some energy.")
+                    .defineInRange("energyPerSecond", 0.0D, 0.0D, 1000.0D);
+            b.pop();
+            b.pop();
         }
     }
 

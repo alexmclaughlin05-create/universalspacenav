@@ -17,6 +17,12 @@ public final class UsnAttachments {
                     .copyOnDeath()
                     .build());
 
+    /** Remaining Viltrumite breathing reserve in ticks; -1 means "never used, treat as full". Resets on death. */
+    public static final Supplier<AttachmentType<Integer>> OXYGEN = TYPES.register("viltrumite_oxygen",
+            () -> AttachmentType.builder(() -> -1)
+                    .serialize(com.mojang.serialization.Codec.INT)
+                    .build());
+
     private UsnAttachments() {
     }
 }

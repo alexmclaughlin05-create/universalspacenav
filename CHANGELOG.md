@@ -13,3 +13,6 @@
 
 ## 0.1.3
 - Protection computed on the server and synced to the HUD; detects Giselle Addon oxygen proof.
+
+## 0.1.4
+- Viltrumite oxygen reserve, vacuum and cold resistance; sealed Marvel suit air; Arcana and Ad Astra hooks; HUD oxygen/energy/sources.

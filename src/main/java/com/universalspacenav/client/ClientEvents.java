@@ -71,6 +71,33 @@ public final class ClientEvents {
         return "universalspacenav.method.none";
     }
 
+    /** Everything currently protecting the player, in plain words. */
+    private static Component sources() {
+        java.util.List<Component> parts = new java.util.ArrayList<>();
+        int code = ClientState.protection, bits = ClientState.bits;
+        if (code == ProtectionStatus.RING || code == ProtectionStatus.ADDON || code == ProtectionStatus.SUIT_OK
+                || code == ProtectionStatus.SUIT_EMPTY || code == ProtectionStatus.PARTIAL) {
+            parts.add(Component.translatable(ProtectionStatus.key(code)));
+        }
+        if ((bits & com.universalspacenav.protect.SpaceProtection.B_MARVEL_AIR) != 0) {
+            parts.add(Component.translatable("universalspacenav.src.marvel_air"));
+        } else if ((bits & com.universalspacenav.protect.SpaceProtection.B_MARVEL_READY) != 0) {
+            parts.add(Component.translatable("universalspacenav.src.marvel_ready"));
+        }
+        if ((bits & com.universalspacenav.protect.SpaceProtection.B_VILT_AIR) != 0) {
+            parts.add(Component.translatable("universalspacenav.src.vilt_air"));
+        } else if ((bits & com.universalspacenav.protect.SpaceProtection.B_VILT_PASSIVE) != 0) {
+            parts.add(Component.translatable("universalspacenav.src.vilt_ready"));
+        }
+        if (parts.isEmpty()) return Component.translatable(ProtectionStatus.key(ProtectionStatus.NONE));
+        net.minecraft.network.chat.MutableComponent out = Component.empty();
+        for (int i = 0; i < parts.size(); i++) {
+            if (i > 0) out.append(Component.literal(" + "));
+            out.append(parts.get(i));
+        }
+        return out;
+    }
+
     private static void renderHud(GuiGraphics g, net.minecraft.client.DeltaTracker dt) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer p = mc.player;
@@ -95,10 +122,19 @@ public final class ClientEvents {
                 Component.translatable("universalspacenav.hud.method", Component.translatable(method(p))),
                 Component.translatable("universalspacenav.hud.entry", entry),
                 Component.translatable("universalspacenav.hud.altitude", (int) p.getY()),
-                Component.translatable("universalspacenav.hud.protection", Component.translatable(ProtectionStatus.key(ClientState.protection))),
+                Component.translatable("universalspacenav.hud.protection", sources()),
         };
-        for (int i = 0; i < lines.length; i++) {
-            g.drawString(font, lines[i], px, py + i * 10, i == 0 ? 0xFFFFD27F : 0xFFFFFFFF, true);
+        java.util.List<Component> all = new java.util.ArrayList<>(java.util.Arrays.asList(lines));
+        if (ClientState.reserve >= 0) {
+            int sec = ClientState.reserve / 20, max = ClientState.reserveMax / 20;
+            all.add(Component.translatable("universalspacenav.hud.oxygen",
+                    String.format("%d:%02d", sec / 60, sec % 60), String.format("%d:%02d", max / 60, max % 60)));
+        }
+        if (ClientState.suitEnergy >= 0) {
+            all.add(Component.translatable("universalspacenav.hud.energy", ClientState.suitEnergy));
+        }
+        for (int i = 0; i < all.size(); i++) {
+            g.drawString(font, all.get(i), px, py + i * 10, i == 0 ? 0xFFFFD27F : 0xFFFFFFFF, true);
         }
         g.pose().popPose();
     }

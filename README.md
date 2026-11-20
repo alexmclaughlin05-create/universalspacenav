@@ -30,3 +30,18 @@ Anything that lets you rise: it works by height, not by item, so Create Lanterns
 The server works out the player's TOTAL active protection regardless of how they fly, and shows it on the HUD (read-only; nothing is granted or consumed). Order: Lantern ring life support, Ad Astra: Giselle Addon oxygen proof (covers MekaSuit space breathing module and oxygen cans), full Ad Astra suit with/without oxygen, incomplete suit, none.
 Caveat: Giselle Addon only switches its proof on once you are somewhere without air, so on the ground or low in the sky the line can say "none active right now" even when you wear the module. Flying with a jetpack while wearing protective armour is detected by the armour, not the jetpack.
 Not implemented: Viltrumite breath-holding / vacuum resistance (proposed, needs a design decision; see below).
+
+## 0.1.4 space protection (what exists, verified against the installed jars)
+Config: `config/universalspacenav-common.toml` > `[protection]`. Every integration has its own switch, all on by default.
+
+**Viltrumite** (`protection.viltrumite`): players who have actually become Viltrumite (Viltrumite Core `isViltrumite` AND `hasChosenRace`; the Integrated Superheroes Omni-Man serum sets the same flags, so it is covered). 30 minute oxygen reserve (configurable), refilled 10x faster than it drains whenever they stand in breathable air. Vacuum resistance (skips Arcana's vacuum-exposure freezing) and extreme-cold resistance (cancels Ad Astra's cold effect) are separate switches and use no reserve.
+**Marvel Superheroes suits** (`protection.marvelSuits`): a complete suit from the configured item tags (default `marvel:iron_man_mark_39_armor`, the one suit family Marvel itself treats as its space suit), helmet closed, every piece holding energy. Extra energy cost per second is configurable and defaults to 0, because Marvel's own costs are never changed.
+**Works in both**: Arcana space (hooks Arcana's `protectedAir`, which Arcana uses for both breathing and freezing) and Ad Astra space (hooks Ad Astra's oxygen and cold events).
+**No double use / no unintended immunity**: our hooks run only after every earlier protection (Arcana's own, suits, Lantern ring, Giselle Addon) has said "no air"; the hooks only record a use; reserve and energy change once per 5 ticks in one place.
+**HUD**: oxygen reserve, suit energy and the list of active protection sources.
+
+**Checked and NOT implemented**
+- Integrated Superheroes other powers (Binary, Hulk, Iceman, Storm, Human Torch, Magneto, Colossus, Thing, Scarlet Witch, ...): the mod's code and text describe no space, vacuum, breathing or cold-immunity ability for any of them, so I did not invent one.
+- Neural Exosuit: its modules are a fixed built-in list (the "Respiration" module is underwater only) and it exposes no way to add a module or to ask which modules are installed. A dedicated life-support upgrade would mean patching its jar, which you said not to do. Not built.
+- Marvel suits other than Mark 39: add their tag to `suitTags` if you want them.
+- Viltrumite Core has its own built-in rule that opens Ad Astra's planet list above its own `spaceLimitY` height, regardless of the Arcana/Ad Astra choice. This mod does not change that.

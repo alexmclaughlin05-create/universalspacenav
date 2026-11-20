@@ -23,5 +23,11 @@
   "universalspacenav.protection.suit_empty": "Ad Astra suit, NO oxygen",
   "universalspacenav.protection.partial": "Ad Astra suit (incomplete)",
   "universalspacenav.protection.none": "none active right now",
-  "universalspacenav.protection.addon": "Giselle Addon oxygen proof (active)"
+  "universalspacenav.protection.addon": "Giselle Addon oxygen proof (active)",
+  "universalspacenav.hud.oxygen": "Oxygen reserve: %s / %s",
+  "universalspacenav.hud.energy": "Suit energy: %s",
+  "universalspacenav.src.vilt_air": "Viltrumite reserve (in use)",
+  "universalspacenav.src.vilt_ready": "Viltrumite (reserve ready)",
+  "universalspacenav.src.marvel_air": "Sealed suit (in use)",
+  "universalspacenav.src.marvel_ready": "Sealed suit (ready)"
 }
