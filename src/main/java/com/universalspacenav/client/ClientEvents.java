@@ -58,26 +58,6 @@ public final class ClientEvents {
         }
     }
 
-    private static boolean isArmorOf(net.minecraft.world.item.ItemStack st, String classPart) {
-        for (Class<?> c = st.getItem().getClass(); c != null; c = c.getSuperclass()) {
-            if (c.getName().contains(classPart)) return true;
-        }
-        return false;
-    }
-
-    /** Display only. Counts worn Ad Astra space suit pieces; never grants or changes protection. */
-    private static String protection(LocalPlayer p) {
-        int n = 0;
-        for (net.minecraft.world.entity.EquipmentSlot slot : new net.minecraft.world.entity.EquipmentSlot[]{
-                net.minecraft.world.entity.EquipmentSlot.HEAD, net.minecraft.world.entity.EquipmentSlot.CHEST,
-                net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET}) {
-            if (isArmorOf(p.getItemBySlot(slot), "adastra.common.items.armor.SpaceSuitItem")) n++;
-        }
-        if (n == 4) return "universalspacenav.protection.suit";
-        if (n > 0) return "universalspacenav.protection.partial";
-        return "universalspacenav.protection.none";
-    }
-
     private static String method(LocalPlayer p) {
         if (ServerLogic.inAdAstraRocket(p)) return "universalspacenav.method.rocket";
         if (p.isFallFlying()) return "universalspacenav.method.elytra";
@@ -115,7 +95,7 @@ public final class ClientEvents {
                 Component.translatable("universalspacenav.hud.method", Component.translatable(method(p))),
                 Component.translatable("universalspacenav.hud.entry", entry),
                 Component.translatable("universalspacenav.hud.altitude", (int) p.getY()),
-                Component.translatable("universalspacenav.hud.protection", Component.translatable(protection(p))),
+                Component.translatable("universalspacenav.hud.protection", Component.translatable(ProtectionStatus.of(p))),
         };
         for (int i = 0; i < lines.length; i++) {
             g.drawString(font, lines[i], px, py + i * 10, i == 0 ? 0xFFFFD27F : 0xFFFFFFFF, true);

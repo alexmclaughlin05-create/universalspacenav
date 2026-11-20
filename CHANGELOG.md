@@ -7,3 +7,6 @@
 
 ## 0.1.1
 - HUD: jetpack/exosuit names, display-only protection line.
+
+## 0.1.2
+- Protection line now reads Create: Lanterns ring life support and Ad Astra suit oxygen state (display only).

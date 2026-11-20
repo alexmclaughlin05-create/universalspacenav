@@ -23,4 +23,5 @@ Anything that lets you rise: it works by height, not by item, so Create Lanterns
 
 ## 0.1.1 notes
 - HUD names: Ad Astra rocket, Elytra, Jetpack (any chestplate item with "jetpack" in its id, e.g. Mekanism/Iron Jetpacks/Create Jetpack), Exosuit (Neural Exosuit), Flight ability, Airborne. Lantern rings, Viltrumite and superhero flight show as "Flight ability" or "Airborne" because they work through the normal flight mechanics; they are not individually named.
-- Protection line is display only: it reports worn Ad Astra suit pieces and never grants protection.
+- Protection line is display only and never grants anything. It reports: Create: Lanterns ring life support (uses the ring mod's own `LifeSupport.canBreatheInSpace`, i.e. ring on and powered), a full Ad Astra suit with or without oxygen, an incomplete suit, or none.
+- Searched and found NO space/oxygen protection in: Viltrumite Core/Flight, Integrated Superheroes, Neural Exosuit (its breathing module is underwater only), Mekanism, Iron Jetpacks, Create Jetpack. Marvel's Iron Man suit only hooks the Stellaris mod, which is not installed. Arcana has no breathing requirement that I found. So the HUD says "none" for those.

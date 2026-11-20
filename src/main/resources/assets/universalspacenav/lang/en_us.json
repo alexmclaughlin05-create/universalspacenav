@@ -16,9 +16,11 @@
   "universalspacenav.method.rocket": "Ad Astra rocket",
   "universalspacenav.method.airborne": "Airborne",
   "universalspacenav.method.none": "None",
-  "universalspacenav.protection.suit": "Ad Astra suit (full)",
-  "universalspacenav.protection.partial": "Ad Astra suit (partial)",
-  "universalspacenav.protection.none": "none detected (other mods not checked)",
   "universalspacenav.method.jetpack": "Jetpack",
-  "universalspacenav.method.exosuit": "Exosuit"
+  "universalspacenav.method.exosuit": "Exosuit",
+  "universalspacenav.protection.ring": "Lantern ring life support",
+  "universalspacenav.protection.suit_ok": "Ad Astra suit, oxygen OK",
+  "universalspacenav.protection.suit_empty": "Ad Astra suit, NO oxygen",
+  "universalspacenav.protection.partial": "Ad Astra suit (incomplete)",
+  "universalspacenav.protection.none": "none detected"
 }
