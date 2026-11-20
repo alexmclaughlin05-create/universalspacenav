@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.universalspacenav.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ArcanaSpaceTravelMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

@@ -1,0 +1,42 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "All Rights Reserved"
+
+[[mods]]
+modId = "universalspacenav"
+version = "0.1.0"
+displayName = "Universal Space Navigation"
+description = '''
+Compatibility mod that lets each player choose between Arcana space (Y 1500) and Ad Astra's planet menu (default Y 5000).
+'''
+
+[[mixins]]
+config = "universalspacenav.mixins.json"
+
+[[dependencies.universalspacenav]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1.0,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.universalspacenav]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,1.22)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.universalspacenav]]
+modId = "arcana"
+type = "optional"
+versionRange = "[0,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.universalspacenav]]
+modId = "ad_astra"
+type = "optional"
+versionRange = "[0,)"
+ordering = "AFTER"
+side = "BOTH"

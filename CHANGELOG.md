@@ -1,0 +1,6 @@
+# Changelog
+## 0.1.0
+- First version. Per-player Arcana / Ad Astra destination, server-side, saved with the player.
+- HUD (destination, flight method, entry altitude, altitude), movable and toggleable in config.
+- Arcana's automatic transition skipped for Ad Astra mode players and anyone in an Ad Astra rocket (optional mixin).
+- Ad Astra planet menu opened at the configured altitude (default Y 5000) for Ad Astra mode players.

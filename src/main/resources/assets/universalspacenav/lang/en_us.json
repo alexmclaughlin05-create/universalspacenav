@@ -1,0 +1,19 @@
+{
+  "key.universalspacenav.cycle": "Switch Space Destination",
+  "key.universalspacenav.toggle_hud": "Toggle Navigation HUD",
+  "key.categories.universalspacenav": "Universal Space Navigation",
+  "universalspacenav.mode.arcana": "Arcana",
+  "universalspacenav.mode.ad_astra": "Ad Astra",
+  "universalspacenav.message.mode": "Space navigation: %s",
+  "universalspacenav.hud.title": "Space Navigation",
+  "universalspacenav.hud.destination": "Destination: %s",
+  "universalspacenav.hud.method": "Flight: %s",
+  "universalspacenav.hud.entry": "Entry altitude: Y %s",
+  "universalspacenav.hud.altitude": "Altitude: Y %s",
+  "universalspacenav.hud.protection": "Protection: handled by each mod",
+  "universalspacenav.method.elytra": "Elytra",
+  "universalspacenav.method.flight": "Flight ability",
+  "universalspacenav.method.rocket": "Ad Astra rocket",
+  "universalspacenav.method.airborne": "Airborne",
+  "universalspacenav.method.none": "None"
+}
