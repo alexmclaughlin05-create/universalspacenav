@@ -20,3 +20,7 @@ Anything that lets you rise: it works by height, not by item, so Create Lanterns
 - Create Aeronautics/Sable vehicles: not supported, left to their original behaviour.
 - If Lanterns Additions has already opened its menu, this mod skips its own (configurable).
 - Mixin targets Arcana 0.1.72; other Arcana versions may make it silently do nothing.
+
+## 0.1.1 notes
+- HUD names: Ad Astra rocket, Elytra, Jetpack (any chestplate item with "jetpack" in its id, e.g. Mekanism/Iron Jetpacks/Create Jetpack), Exosuit (Neural Exosuit), Flight ability, Airborne. Lantern rings, Viltrumite and superhero flight show as "Flight ability" or "Airborne" because they work through the normal flight mechanics; they are not individually named.
+- Protection line is display only: it reports worn Ad Astra suit pieces and never grants protection.

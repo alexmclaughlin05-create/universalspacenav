@@ -4,3 +4,6 @@
 - HUD (destination, flight method, entry altitude, altitude), movable and toggleable in config.
 - Arcana's automatic transition skipped for Ad Astra mode players and anyone in an Ad Astra rocket (optional mixin).
 - Ad Astra planet menu opened at the configured altitude (default Y 5000) for Ad Astra mode players.
+
+## 0.1.1
+- HUD: jetpack/exosuit names, display-only protection line.
