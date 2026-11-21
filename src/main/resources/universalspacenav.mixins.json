@@ -13,6 +13,7 @@
   },
   "client": [
     "client.ArcanaSpaceSkyMaterialMixin",
-    "client.ArcanaSpaceSkyMixin"
+    "client.ArcanaSpaceSkyMixin",
+    "client.RenderTypeDrawProbeMixin"
   ]
 }

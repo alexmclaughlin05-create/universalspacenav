@@ -25,3 +25,6 @@
 
 ## 0.1.7
 - `/usnsky dump` now also reports, per Earth/Moon/atmosphere layer, how many fragments were drawn and how many screen pixels changed, plus the planet texture's size and average colour.
+
+## 0.1.8
+- Sky dump also logs the GPU state at each draw inside an Arcana sky layer (vertex counts, scissor, colour mask, program link status, GL errors).

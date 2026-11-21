@@ -9,6 +9,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.opengl.GL30;
 
 /**
@@ -69,6 +71,8 @@ public final class SkyDiagnostics {
     }
 
     private static int[] frameBefore;
+    private static boolean inLayer;
+    private static int drawsInLayer;
     private static int query;
 
     /** Called at the start of a sky layer (shell). Only while a dump is running. */
@@ -79,6 +83,8 @@ public final class SkyDiagnostics {
             RenderTarget main = mc.getMainRenderTarget();
             frameBefore = new int[main.width * main.height];
             GL11.glReadPixels(0, 0, main.width, main.height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, frameBefore);
+            inLayer = true;
+            drawsInLayer = 0;
             query = GL15.glGenQueries();
             GL15.glBeginQuery(GL15.GL_SAMPLES_PASSED, query);
         } catch (Throwable t) {
@@ -91,6 +97,7 @@ public final class SkyDiagnostics {
     public static void layerEnd(int mode, String texture) {
         if (!dumping || frameBefore == null) return;
         try {
+            inLayer = false;
             GL15.glEndQuery(GL15.GL_SAMPLES_PASSED);
             int samples = GL15.glGetQueryObjecti(query, GL15.GL_QUERY_RESULT);
             GL15.glDeleteQueries(query);
@@ -107,7 +114,7 @@ public final class SkyDiagnostics {
             }
             String name = mode == 0 ? "EARTH surface" : mode == 1 ? "MOON surface" : mode == 2 ? "clouds" : mode == 3 ? "atmosphere" : mode == 4 ? "starfield" : "mode " + mode;
             StringBuilder sb = new StringBuilder("[USN sky] LAYER ").append(name).append(" (").append(texture).append(")\n");
-            sb.append("  fragments passed=").append(samples).append(" pixels changed=").append(changed);
+            sb.append("  draw calls inside this layer=").append(drawsInLayer).append("\n  fragments passed=").append(samples).append(" pixels changed=").append(changed);
             if (changed > 0) {
                 sb.append(" avg RGBA of changed=").append(r / changed).append(',').append(g / changed).append(',').append(b / changed).append(',').append(a / changed);
             }
@@ -142,6 +149,53 @@ public final class SkyDiagnostics {
             return "  texture lookup failed: " + t;
         } finally {
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, saved);
+        }
+    }
+
+    public static boolean inLayer() {
+        return dumping && inLayer;
+    }
+
+    /** Logs the GPU state just before a draw that happens inside a sky layer. Read-only. */
+    public static void preDraw(String type, int vertices, int indices) {
+        drawsInLayer++;
+        try (MemoryStack st = MemoryStack.stackPush()) {
+            var vp = st.mallocInt(4);
+            var sc = st.mallocInt(4);
+            var pm = st.mallocInt(2);
+            var cm = st.malloc(4);
+            GL11.glGetIntegerv(GL11.GL_VIEWPORT, vp);
+            GL11.glGetIntegerv(GL11.GL_SCISSOR_BOX, sc);
+            GL11.glGetIntegerv(GL11.GL_POLYGON_MODE, pm);
+            GL11.glGetBooleanv(GL11.GL_COLOR_WRITEMASK, cm);
+            int prog = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
+            int link = prog > 0 ? GL20.glGetProgrami(prog, GL20.GL_LINK_STATUS) : -1;
+            StringBuilder sb = new StringBuilder("[USN sky]   DRAW ").append(type).append('\n');
+            sb.append("    vertices=").append(vertices).append(" indices=").append(indices)
+                    .append(" program=").append(prog).append(" linked=").append(link).append('\n');
+            sb.append("    viewport=").append(vp.get(0)).append(',').append(vp.get(1)).append(',').append(vp.get(2)).append(',').append(vp.get(3))
+                    .append(" scissorTest=").append(GL11.glIsEnabled(GL11.GL_SCISSOR_TEST))
+                    .append(" scissorBox=").append(sc.get(0)).append(',').append(sc.get(1)).append(',').append(sc.get(2)).append(',').append(sc.get(3)).append('\n');
+            sb.append("    colorMask=").append(cm.get(0)).append(cm.get(1)).append(cm.get(2)).append(cm.get(3))
+                    .append(" stencilTest=").append(GL11.glIsEnabled(GL11.GL_STENCIL_TEST))
+                    .append(" rasterizerDiscard=").append(GL11.glIsEnabled(GL30.GL_RASTERIZER_DISCARD))
+                    .append(" polygonMode=0x").append(Integer.toHexString(pm.get(0)))
+                    .append(" cull=").append(GL11.glIsEnabled(GL11.GL_CULL_FACE))
+                    .append(" cullFace=0x").append(Integer.toHexString(GL11.glGetInteger(GL11.GL_CULL_FACE_MODE)))
+                    .append(" frontFace=0x").append(Integer.toHexString(GL11.glGetInteger(GL11.GL_FRONT_FACE)))
+                    .append(" depthTest=").append(GL11.glIsEnabled(GL11.GL_DEPTH_TEST))
+                    .append(" blend=").append(GL11.glIsEnabled(GL11.GL_BLEND)).append('\n');
+            sb.append("    GL error before draw=0x").append(Integer.toHexString(GL11.glGetError()));
+            UniversalSpaceNavigation.LOGGER.info(sb.toString());
+        } catch (Throwable t) {
+            UniversalSpaceNavigation.LOGGER.warn("[USN sky] preDraw failed", t);
+        }
+    }
+
+    public static void postDraw() {
+        try {
+            UniversalSpaceNavigation.LOGGER.info("[USN sky]   after draw GL error=0x" + Integer.toHexString(GL11.glGetError()));
+        } catch (Throwable ignored) {
         }
     }
 
