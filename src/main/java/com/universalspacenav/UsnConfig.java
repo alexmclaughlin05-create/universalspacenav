@@ -147,6 +147,7 @@ public final class UsnConfig {
         public final ModConfigSpec.BooleanValue skyOwnBuffer;
         public final ModConfigSpec.BooleanValue skyIrisAllowShader;
         public final ModConfigSpec.BooleanValue skyHideAtmo;
+        public final ModConfigSpec.BooleanValue leakFix;
         public final ModConfigSpec.BooleanValue leakWatch;
         public final ModConfigSpec.IntValue leakWatchDelay;
 
@@ -174,6 +175,9 @@ public final class UsnConfig {
             b.push("diagnostics");
             skyNoDepth = b.comment("DIAGNOSTIC for Arcana's space sky. Draw the Earth and Moon surfaces without the depth test (nothing else changes). Also toggled in game with /usnsky nodepth.")
                     .define("disableSurfaceDepthTest", false);
+            leakFix = b.comment("Memory leak workaround. Celestisynth keeps every player it ever animated in a permanent list, and Arcana's MobCasterClient keeps the last world it saw; both stop old worlds and players from being freed after dimension changes.",
+                            "When true (default), USN removes only STALE entries (players removed from the game or from a world you are no longer in; a world that is not your current one). Entries for your current world are never touched. Mods other than these two are not affected.")
+                    .define("leakFix", true);
             leakWatch = b.comment("DIAGNOSTIC (read-only). Watches the previous world and player after a dimension change with weak references (which do not keep them alive) and, after a delay, logs which known mod fields in Arcana, Create: Lanterns and Neural Exosuit still point at them. Cost: two reference checks per tick. Nothing is cleared or changed. Also /usnleak check.")
                     .define("leakWatch", true);
             leakWatchDelay = b.comment("Seconds to wait after a dimension change before the automatic leak scan.")

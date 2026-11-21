@@ -51,3 +51,6 @@
 
 ## 0.1.15
 - Diagnostic only: /usnleak find searches memory (read-only, background) for what keeps old worlds and players alive and logs the reference path.
+
+## 0.1.16
+- Memory leak workaround (config leakFix, default on): releases stale Celestisynth player entries and Arcana MobCasterClient's old world. Only stale entries are touched.

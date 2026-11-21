@@ -21,6 +21,7 @@ public final class LeakWatchEvents {
     public static void tick(ClientTickEvent.Post e) {
         try {
             LeakWatch.tick();
+            LeakFix.tick();
         } catch (Throwable t) {
             UniversalSpaceNavigation.LOGGER.warn("[USN leak] tick failed", t);
         }
