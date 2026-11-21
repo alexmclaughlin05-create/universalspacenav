@@ -45,3 +45,6 @@
 
 ## 0.1.13
 - Diagnostics only: /usnsky skip <0-4|off> leaves one Arcana sky layer out, /usnsky allow <on|off> toggles the Iris override, /usnsky dump now also logs per-layer GL state before/after and the screen area each layer changed.
+
+## 0.1.14
+- With a shader pack active, Arcana's atmosphere layer is not drawn (it showed as a cyan wash with stripes over all of Earth). Config compat.arcanaSkyHideAtmosphereWithShaders.

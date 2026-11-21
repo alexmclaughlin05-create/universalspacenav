@@ -40,6 +40,33 @@ public final class SkyBuffers {
         return source;
     }
 
+    private static java.lang.reflect.Method packMethod;
+    private static Object apiInstance;
+
+    /** True when Iris is loaded and a shader pack is currently active. */
+    public static boolean packInUse() {
+        try {
+            if (irisLoaded == null) irisLoaded = ModList.get().isLoaded("iris");
+            if (!irisLoaded) return false;
+            if (packMethod == null) {
+                Class<?> api = Class.forName("net.irisshaders.iris.api.v0.IrisApi");
+                apiInstance = api.getMethod("getInstance").invoke(null);
+                packMethod = api.getMethod("isShaderPackInUse");
+            }
+            return (Boolean) packMethod.invoke(apiInstance);
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    public static boolean hideAtmosphere() {
+        try {
+            return UsnConfig.CLIENT.skyHideAtmo.get() && packInUse();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
     public static void enter() {
         inShell = true;
     }

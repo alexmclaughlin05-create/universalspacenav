@@ -146,6 +146,7 @@ public final class UsnConfig {
         public final ModConfigSpec.BooleanValue skyNoDepth;
         public final ModConfigSpec.BooleanValue skyOwnBuffer;
         public final ModConfigSpec.BooleanValue skyIrisAllowShader;
+        public final ModConfigSpec.BooleanValue skyHideAtmo;
         public final ModConfigSpec.BooleanValue leakWatch;
         public final ModConfigSpec.IntValue leakWatchDelay;
 
@@ -166,6 +167,9 @@ public final class UsnConfig {
             skyIrisAllowShader = b.comment("Iris + shader pack compatibility for Arcana's space sky. With a shader pack on, Iris switches off colour and depth writing for every shader it does not know, which includes Arcana's planet shader, so Earth and the Moon vanish.",
                             "When true (default), Iris is told to let unknown shaders draw, but only while Arcana's planet layers are being drawn. Everything else keeps your Iris setting. No effect without Iris or without a shader pack.")
                     .define("arcanaSkyAllowUnknownShader", true);
+            skyHideAtmo = b.comment("With a shader pack active, Arcana's atmosphere layer (the thin blue glow around Earth) renders as a cyan wash with vertical stripes over the whole planet.",
+                            "When true (default), that one layer is not drawn while a shader pack is on. Without a shader pack it is always drawn. Set false to bring it back.")
+                    .define("arcanaSkyHideAtmosphereWithShaders", true);
             b.pop();
             b.push("diagnostics");
             skyNoDepth = b.comment("DIAGNOSTIC for Arcana's space sky. Draw the Earth and Moon surfaces without the depth test (nothing else changes). Also toggled in game with /usnsky nodepth.")

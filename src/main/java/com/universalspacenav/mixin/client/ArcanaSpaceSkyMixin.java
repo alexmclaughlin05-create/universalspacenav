@@ -68,7 +68,7 @@ public abstract class ArcanaSpaceSkyMixin {
     @Inject(method = "shell(Lorg/joml/Matrix4f;Lnet/minecraft/world/phys/Vec3;DDILjava/lang/String;DF)V",
             at = @At("HEAD"), cancellable = true, remap = false, require = 0)
     private static void usn$skip(Matrix4f m, Vec3 c, double s, double r, int mode, String tex, double t, float p, CallbackInfo ci) {
-        if (SkyDiagnostics.skipMode == mode) {
+        if (SkyDiagnostics.skipMode == mode || (mode == 3 && SkyBuffers.hideAtmosphere())) {
             SkyBuffers.exit();
             if (SkyBuffers.active()) SkyBuffers.extension(false);
             SkyDiagnostics.layerEnd(mode, tex);
