@@ -34,3 +34,7 @@
 
 ## 0.1.10
 - Create: Lanterns ring life support and vacuum protection in Arcana's space (it only worked in Ad Astra space before). Costs the ring's own energy, no extra cost. Config: protection.lanternRing.enabled (default true). Not applied in Ad Astra space, so nothing is doubled.
+
+## 0.1.11
+- Fix: Arcana Earth/Moon vanishing when a shader pack (e.g. Complementary Reimagined) is on. Iris masks colour/depth writes for shaders it does not know; USN now lets Arcana's planet shader through, only while a planet layer is drawing (config compat.arcanaSkyAllowUnknownShader).
+- /usnsky dump now also logs the active shader, Iris pipeline and Iris skip decision per draw.

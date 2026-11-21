@@ -53,12 +53,14 @@ public abstract class ArcanaSpaceSkyMixin {
     @Inject(method = "shell(Lorg/joml/Matrix4f;Lnet/minecraft/world/phys/Vec3;DDILjava/lang/String;DF)V",
             at = @At("HEAD"), remap = false, require = 0)
     private static void usn$extOn(Matrix4f m, Vec3 c, double s, double r, int mode, String tex, double t, float p, CallbackInfo ci) {
+        SkyBuffers.enter();
         if (SkyBuffers.active()) SkyBuffers.extension(true);
     }
 
     @Inject(method = "shell(Lorg/joml/Matrix4f;Lnet/minecraft/world/phys/Vec3;DDILjava/lang/String;DF)V",
             at = @At("RETURN"), remap = false, require = 0)
     private static void usn$extOff(Matrix4f m, Vec3 c, double s, double r, int mode, String tex, double t, float p, CallbackInfo ci) {
+        SkyBuffers.exit();
         if (SkyBuffers.active()) SkyBuffers.extension(false);
     }
 }

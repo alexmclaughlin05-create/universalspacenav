@@ -185,6 +185,9 @@ public final class SkyDiagnostics {
                     .append(" frontFace=0x").append(Integer.toHexString(GL11.glGetInteger(GL11.GL_FRONT_FACE)))
                     .append(" depthTest=").append(GL11.glIsEnabled(GL11.GL_DEPTH_TEST))
                     .append(" blend=").append(GL11.glIsEnabled(GL11.GL_BLEND)).append('\n');
+            sb.append("    framebuffer=").append(GL11.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING))
+                    .append(" depthMask=").append(GL11.glGetBoolean(GL11.GL_DEPTH_WRITEMASK)).append('\n');
+            sb.append("    iris: ").append(irisDraw()).append('\n');
             sb.append("    GL error before draw=0x").append(Integer.toHexString(GL11.glGetError()));
             UniversalSpaceNavigation.LOGGER.info(sb.toString());
         } catch (Throwable t) {
@@ -235,6 +238,25 @@ public final class SkyDiagnostics {
             UniversalSpaceNavigation.LOGGER.info(sb.toString());
         } catch (Throwable t) {
             UniversalSpaceNavigation.LOGGER.warn("[USN sky] snapshot failed", t);
+        }
+    }
+
+    /** Which shader is about to draw, and what Iris will decide about it. Reflection only; read-only. */
+    private static String irisDraw() {
+        try {
+            var shader = RenderSystem.getShader();
+            StringBuilder sb = new StringBuilder("shader=");
+            sb.append(shader == null ? "null" : shader.getName() + " (" + shader.getClass().getSimpleName() + ")");
+            Class<?> iris = Class.forName("net.irisshaders.iris.Iris");
+            Object cfg = iris.getMethod("getIrisConfig").invoke(null);
+            sb.append(" allowUnknownShaders(now)=").append(cfg.getClass().getMethod("shouldAllowUnknownShaders").invoke(cfg));
+            Object pm = iris.getMethod("getPipelineManager").invoke(null);
+            Object pipe = pm.getClass().getMethod("getPipelineNullable").invoke(pm);
+            sb.append(" pipeline=").append(pipe == null ? "none" : pipe.getClass().getSimpleName());
+            sb.append(" skipThis=").append(shader.getClass().getMethod("iris$shouldSkipThis").invoke(shader));
+            return sb.toString();
+        } catch (Throwable t) {
+            return "n/a (" + t.getClass().getSimpleName() + ")";
         }
     }
 

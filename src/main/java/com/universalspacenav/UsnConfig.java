@@ -145,6 +145,7 @@ public final class UsnConfig {
         public final ModConfigSpec.DoubleValue hudScale;
         public final ModConfigSpec.BooleanValue skyNoDepth;
         public final ModConfigSpec.BooleanValue skyOwnBuffer;
+        public final ModConfigSpec.BooleanValue skyIrisAllowShader;
 
         Client(ModConfigSpec.Builder b) {
             b.push("hud");
@@ -160,6 +161,9 @@ public final class UsnConfig {
             skyOwnBuffer = b.comment("Iris compatibility for Arcana's space sky. Iris replaces the game's shared draw queue while the world renders, and that queue ignores endBatch(), so Arcana's Earth and Moon are never drawn at the right moment.",
                             "When true (default) and Iris is installed, Arcana's planet layers are drawn through their own immediate buffer instead. No effect without Iris.")
                     .define("arcanaSkyOwnBuffer", true);
+            skyIrisAllowShader = b.comment("Iris + shader pack compatibility for Arcana's space sky. With a shader pack on, Iris switches off colour and depth writing for every shader it does not know, which includes Arcana's planet shader, so Earth and the Moon vanish.",
+                            "When true (default), Iris is told to let unknown shaders draw, but only while Arcana's planet layers are being drawn. Everything else keeps your Iris setting. No effect without Iris or without a shader pack.")
+                    .define("arcanaSkyAllowUnknownShader", true);
             b.pop();
             b.push("diagnostics");
             skyNoDepth = b.comment("DIAGNOSTIC for Arcana's space sky. Draw the Earth and Moon surfaces without the depth test (nothing else changes). Also toggled in game with /usnsky nodepth.")

@@ -18,6 +18,7 @@ public final class SkyBuffers {
     private static Boolean irisLoaded;
     private static ThreadLocal<Boolean> skipExtension;
     private static boolean looked;
+    private static boolean inShell;
 
     private SkyBuffers() {
     }
@@ -37,6 +38,25 @@ public final class SkyBuffers {
             UniversalSpaceNavigation.LOGGER.info("[USN sky] Iris detected: drawing Arcana's planets through an immediate buffer");
         }
         return source;
+    }
+
+    public static void enter() {
+        inShell = true;
+    }
+
+    public static void exit() {
+        inShell = false;
+    }
+
+    /** True while Arcana's planet layer is being drawn and Iris should let its (unknown) shader draw. */
+    public static boolean allowUnknownShader() {
+        try {
+            if (!inShell) return false;
+            if (irisLoaded == null) irisLoaded = ModList.get().isLoaded("iris");
+            return irisLoaded && UsnConfig.CLIENT.skyIrisAllowShader.get();
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     /** With a shader pack active, Iris extends vertex formats; Arcana's own shader needs the plain format. */
