@@ -137,6 +137,7 @@ public final class UsnConfig {
         public final ModConfigSpec.IntValue hudX;
         public final ModConfigSpec.IntValue hudY;
         public final ModConfigSpec.DoubleValue hudScale;
+        public final ModConfigSpec.BooleanValue skyNoDepth;
 
         Client(ModConfigSpec.Builder b) {
             b.push("hud");
@@ -147,6 +148,10 @@ public final class UsnConfig {
             hudX = b.comment("Pixels from the left edge.").defineInRange("x", 6, 0, 4000);
             hudY = b.comment("Pixels from the top edge.").defineInRange("y", 40, 0, 4000);
             hudScale = b.comment("Text scale.").defineInRange("scale", 1.0D, 0.5D, 3.0D);
+            b.pop();
+            b.push("diagnostics");
+            skyNoDepth = b.comment("DIAGNOSTIC for Arcana's space sky. Draw the Earth and Moon surfaces without the depth test (nothing else changes). Also toggled in game with /usnsky nodepth.")
+                    .define("disableSurfaceDepthTest", false);
             b.pop();
         }
     }
