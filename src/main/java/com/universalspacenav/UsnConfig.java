@@ -53,8 +53,11 @@ public final class UsnConfig {
         public final ModConfigSpec.BooleanValue heroBreathing;
         public final ModConfigSpec.BooleanValue heroVacuum;
         public final ModConfigSpec.BooleanValue heroCold;
+        public final ModConfigSpec.BooleanValue jeiMapFix;
 
         Common(ModConfigSpec.Builder b) {
+            jeiMapFix = b.comment("Speeds up joining a world: while JEI Stuff scans villager trades, map trades skip the slow structure search. Real trades are not affected. Turn off if JEI Stuff's map trade pages look wrong.")
+                    .define("compat.jeiStuffSkipMapSearch", true);
             b.push("altitudes");
             arcanaAltitude = b
                     .comment("Shown on the HUD only. Arcana's real entry height (Y 1500) is fixed inside Arcana and cannot be changed by this mod.")

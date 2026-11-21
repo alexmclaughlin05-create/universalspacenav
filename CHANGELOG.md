@@ -66,3 +66,6 @@
 
 ## 0.1.20
 - Diagnostic only: movement lag lines are now labelled WALKING / SWIMMING / FLYING / AIRBORNE and only measure HORIZONTAL movement (vertical flight speed no longer counts as "moved" or "not moved"). `/usnlag status` shows slow vs. normal starts per state.
+
+## 0.1.21
+- Join-time fix: while JEI Stuff scans villager trades at world join, map trades (Wan Ancient Beasts, Alex's Caves, Arcana) no longer run a slow structure search per test. Only active when JEI Stuff is on the call stack; real trades are untouched. Works on a dedicated server too. Config: compat.jeiStuffSkipMapSearch (common config, default on).

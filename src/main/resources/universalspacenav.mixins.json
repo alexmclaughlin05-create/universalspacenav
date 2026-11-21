@@ -6,7 +6,8 @@
   "mixins": [
     "ArcanaSpaceTravelMixin",
     "ArcanaSpaceEnvironmentMixin",
-    "ViltrumiteNativeTriggerMixin"
+    "ViltrumiteNativeTriggerMixin",
+    "JeiStuffMapSearchMixin"
   ],
   "injectors": {
     "defaultRequire": 0
