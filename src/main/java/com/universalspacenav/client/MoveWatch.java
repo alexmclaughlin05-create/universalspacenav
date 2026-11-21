@@ -30,7 +30,21 @@ public final class MoveWatch {
     private static boolean pSawImpulse;
     private static long pMaxGapMs;
 
+    private static final String[] STATES = {"walking", "swimming", "flying", "airborne", "stationary"};
+    private static final long[] slowByState = new long[5];
+    private static final long[] okByState = new long[5];
+    private static String pState = "";
+    private static long pLatencyMs;
+
     private MoveWatch() {
+    }
+
+    /** walking = on ground; swimming = in fluid; flying = creative/elytra flag or fast upward boost; airborne = jumping/falling. */
+    private static int classify(LocalPlayer p) {
+        if (p.isInWater() || p.isInLava()) return 1;
+        if (p.getAbilities().flying || p.isFallFlying() || (!p.onGround() && p.getDeltaMovement().y > 0.45)) return 2;
+        if (!p.onGround()) return 3;
+        return 0;
     }
 
     public static void onCorrection() {
@@ -79,6 +93,7 @@ public final class MoveWatch {
             pSawImpulse = false;
             pImpulseNs = 0;
             pMaxGapMs = 0;
+            pState = STATES[classify(p)];
             return;
         }
         if (!pending) return;
@@ -87,23 +102,33 @@ public final class MoveWatch {
             pImpulseNs = now;
         }
         double dx = pos.x - sx, dz = pos.z - sz;
-        boolean moved = dx * dx + dz * dz > 1.0e-4;
+        boolean moved = dx * dx + dz * dz > 0.0025;
+        
         long heldMs = (now - pStartNs) / 1_000_000;
         if (moved) {
+            int si = java.util.Arrays.asList(STATES).indexOf(pState);
+            if (si < 0) si = 4;
             if (heldMs > 300) {
                 slowMoves++;
-                report("slow start", heldMs, now, gc);
+                slowByState[si]++;
+                report("slow horizontal start", heldMs, now, gc);
+            } else {
+                okByState[si]++;
             }
             pending = false;
         } else if (!raw) {
             if (heldMs > 150) {
                 slowMoves++;
-                report("key released before the player moved (a missed or swallowed press)", heldMs, now, gc);
+                int si = java.util.Arrays.asList(STATES).indexOf(pState);
+                slowByState[si < 0 ? 4 : si]++;
+                report("key released before any horizontal movement", heldMs, now, gc);
             }
             pending = false;
         } else if (heldMs > 1500) {
             slowMoves++;
-            report("still not moving after 1.5 s of holding", heldMs, now, gc);
+            int si = java.util.Arrays.asList(STATES).indexOf(pState);
+            slowByState[si < 0 ? 4 : si]++;
+            report("no horizontal movement after 1.5 s of holding", heldMs, now, gc);
             pending = false;
         }
     }
@@ -117,7 +142,7 @@ public final class MoveWatch {
         else if (toImpulse > 150) where = "the final movement input only became non-zero after " + toImpulse + " ms => something delayed the input";
         else if (pMaxGapMs > 250) where = "input was fine but the game thread stalled (" + pMaxGapMs + " ms) => freeze (see the CLIENT stall / SERVER tick lines)";
         else where = "input was non-zero from the start but the player did not move => movement blocked after input (server/physics/rubber-banding)";
-        UniversalSpaceNavigation.LOGGER.info("[USN lag] MOVEMENT " + what + ": held " + heldMs + " ms; " + where
+        UniversalSpaceNavigation.LOGGER.info("[USN lag] MOVEMENT [" + pState.toUpperCase() + (pState.equals("flying") ? ", flight: horizontal response is up to the flight mod" : "") + (STATES[classify(p)].equals(pState) ? "" : ", became " + STATES[classify(p)]) + "] " + what + ": held " + heldMs + " ms; " + where
                 + "; GC in that time " + (gc - pStartGc) + " ms; server position corrections " + (corrections - pStartCorrections)
                 + "; flying=" + p.getAbilities().flying + " fallFlying=" + p.isFallFlying() + " onGround=" + p.onGround()
                 + " inWater=" + p.isInWater() + " usingItem=" + p.isUsingItem() + " dim=" + p.level().dimension().location()
@@ -135,7 +160,7 @@ public final class MoveWatch {
     public static String status() {
         return "server ticks " + LagWatch.serverTicks + " (slowest " + LagWatch.worstServerMs + " ms, " + LagWatch.slowServerTicks + " over 150 ms); "
                 + "client ticks " + ticks + " (longest stall " + worstGapMs + " ms, " + slowGaps + " over 250 ms); "
-                + "slow/missed movement starts " + slowMoves + "; server position corrections " + corrections
+                + "slow horizontal starts " + slowMoves + " (walking " + slowByState[0] + "/" + (slowByState[0] + okByState[0]) + ", swimming " + slowByState[1] + "/" + (slowByState[1] + okByState[1]) + ", flying " + slowByState[2] + "/" + (slowByState[2] + okByState[2]) + ", airborne " + slowByState[3] + "/" + (slowByState[3] + okByState[3]) + ")" + "; server position corrections " + corrections
                 + "; total GC time " + LagWatch.gcMs() + " ms; memory " + LagWatch.heap();
     }
 
@@ -143,6 +168,8 @@ public final class MoveWatch {
         worstGapMs = 0;
         slowGaps = 0;
         slowMoves = 0;
+        java.util.Arrays.fill(slowByState, 0);
+        java.util.Arrays.fill(okByState, 0);
         corrections = 0;
         LagWatch.worstServerMs = 0;
         LagWatch.slowServerTicks = 0;

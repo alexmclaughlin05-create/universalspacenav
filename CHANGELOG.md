@@ -63,3 +63,6 @@
 
 ## 0.1.19
 - Diagnostic only: `/usnleak find` no longer follows weak references or weak-map keys (they do not keep objects alive), so it only reports real holders.
+
+## 0.1.20
+- Diagnostic only: movement lag lines are now labelled WALKING / SWIMMING / FLYING / AIRBORNE and only measure HORIZONTAL movement (vertical flight speed no longer counts as "moved" or "not moved"). `/usnlag status` shows slow vs. normal starts per state.
