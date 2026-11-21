@@ -148,6 +148,7 @@ public final class UsnConfig {
         public final ModConfigSpec.BooleanValue skyIrisAllowShader;
         public final ModConfigSpec.BooleanValue skyHideAtmo;
         public final ModConfigSpec.BooleanValue leakFix;
+        public final ModConfigSpec.BooleanValue lagWatch;
         public final ModConfigSpec.BooleanValue leakWatch;
         public final ModConfigSpec.IntValue leakWatchDelay;
 
@@ -175,6 +176,8 @@ public final class UsnConfig {
             b.push("diagnostics");
             skyNoDepth = b.comment("DIAGNOSTIC for Arcana's space sky. Draw the Earth and Moon surfaces without the depth test (nothing else changes). Also toggled in game with /usnsky nodepth.")
                     .define("disableSurfaceDepthTest", false);
+            lagWatch = b.comment("DIAGNOSTIC (read-only, writes to the log only when something is slow). Logs server ticks over 150 ms, game-thread stalls over 250 ms, garbage-collection time during them, and movement keys that were held but did not move the player (with where the delay happened). Also /usnlag status.")
+                    .define("lagWatch", true);
             leakFix = b.comment("Memory leak workaround. Celestisynth keeps every player it ever animated in a permanent list, and Arcana's MobCasterClient keeps the last world it saw; both stop old worlds and players from being freed after dimension changes.",
                             "When true (default), USN removes only STALE entries (players removed from the game or from a world you are no longer in; a world that is not your current one). Entries for your current world are never touched. Mods other than these two are not affected.")
                     .define("leakFix", true);

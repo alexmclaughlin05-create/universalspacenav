@@ -54,3 +54,6 @@
 
 ## 0.1.16
 - Memory leak workaround (config leakFix, default on): releases stale Celestisynth player entries and Arcana MobCasterClient's old world. Only stale entries are touched.
+
+## 0.1.17
+- Diagnostic only (no behaviour change): lag watch. Logs "[USN lag]" lines only when something is slow: server ticks over 150 ms, client game-thread stalls over 250 ms, GC time during them, and movement keys held without the player moving (says whether input, a freeze, or the server was the cause). `/usnlag status|reset`. Config: lagWatch.

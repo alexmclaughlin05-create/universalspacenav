@@ -22,6 +22,7 @@ public final class LeakWatchEvents {
         try {
             LeakWatch.tick();
             LeakFix.tick();
+            MoveWatch.tick();
         } catch (Throwable t) {
             UniversalSpaceNavigation.LOGGER.warn("[USN leak] tick failed", t);
         }
@@ -29,6 +30,16 @@ public final class LeakWatchEvents {
 
     @SubscribeEvent
     public static void register(RegisterClientCommandsEvent e) {
+        e.getDispatcher().register(Commands.literal("usnlag")
+                .then(Commands.literal("status").executes(c -> {
+                    c.getSource().sendSuccess(() -> Component.literal("[USN lag] " + MoveWatch.status()), false);
+                    return 1;
+                }))
+                .then(Commands.literal("reset").executes(c -> {
+                    MoveWatch.reset();
+                    c.getSource().sendSuccess(() -> Component.literal("[USN lag] counters reset"), false);
+                    return 1;
+                })));
         e.getDispatcher().register(Commands.literal("usnleak")
                 .then(Commands.literal("check").executes(c -> {
                     List<String> lines = LeakWatch.report(true, "manual check");
