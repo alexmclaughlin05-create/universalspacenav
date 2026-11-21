@@ -146,7 +146,7 @@ public final class RefFinder {
                         int k = 0;
                         for (Map.Entry<?, ?> e : new ArrayList<>(m.entrySet())) {
                             if (k++ > 20000) break;
-                            push(e.getKey(), n, "{key}", seen, queue);
+                            if (!(m instanceof java.util.WeakHashMap)) push(e.getKey(), n, "{key}", seen, queue);
                             push(e.getValue(), n, "{value of " + brief(e.getKey()) + "}", seen, queue);
                         }
                     } else if (o instanceof Iterable<?> it && c.getName().startsWith("java.util.")) {
@@ -156,7 +156,7 @@ public final class RefFinder {
                             push(e, n, "[" + (k - 1) + "]", seen, queue);
                         }
                     } else if (o instanceof Reference<?> ref) {
-                        push(ref.get(), n, "(weak/soft ref, not a real hold)", seen, queue);
+                        // weak/soft references do not keep an object alive: do not follow them
                     } else if (o instanceof AtomicReference<?> ar) {
                         push(ar.get(), n, ".get()", seen, queue);
                     } else if (o instanceof Optional<?> op) {

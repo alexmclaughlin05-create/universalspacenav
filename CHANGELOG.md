@@ -60,3 +60,6 @@
 
 ## 0.1.18
 - Diagnostic only: movement lag lines now also record velocity, collision, speed, effects, vehicle, blocks under the player and equipped items. Join-time gaps (no player yet) are no longer reported as freezes.
+
+## 0.1.19
+- Diagnostic only: `/usnleak find` no longer follows weak references or weak-map keys (they do not keep objects alive), so it only reports real holders.
