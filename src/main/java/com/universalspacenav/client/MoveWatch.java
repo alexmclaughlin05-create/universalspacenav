@@ -113,7 +113,7 @@ public final class MoveWatch {
         else where = "input was non-zero from the start but the player did not move => movement blocked after input (server/physics/rubber-banding)";
         UniversalSpaceNavigation.LOGGER.info("[USN lag] MOVEMENT " + what + ": held " + heldMs + " ms; " + where
                 + "; GC in that time " + (gc - pStartGc) + " ms; server position corrections " + (corrections - pStartCorrections)
-                + "; flying=" + p.getAbilities().flying + " fallFlying=" + p.isFallingFlying() + " onGround=" + p.onGround()
+                + "; flying=" + p.getAbilities().flying + " fallFlying=" + p.isFallFlying() + " onGround=" + p.onGround()
                 + " inWater=" + p.isInWater() + " usingItem=" + p.isUsingItem() + " dim=" + p.level().dimension().location()
                 + " fps=" + mc.getFps());
     }
