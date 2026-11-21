@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL30;
 
 /**
@@ -64,6 +65,83 @@ public final class SkyDiagnostics {
             if (mc.player != null) {
                 mc.player.displayClientMessage(Component.literal("[USN] sky dump written to latest.log"), false);
             }
+        }
+    }
+
+    private static int[] frameBefore;
+    private static int query;
+
+    /** Called at the start of a sky layer (shell). Only while a dump is running. */
+    public static void layerBegin(int mode, String texture) {
+        if (!dumping) return;
+        try {
+            Minecraft mc = Minecraft.getInstance();
+            RenderTarget main = mc.getMainRenderTarget();
+            frameBefore = new int[main.width * main.height];
+            GL11.glReadPixels(0, 0, main.width, main.height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, frameBefore);
+            query = GL15.glGenQueries();
+            GL15.glBeginQuery(GL15.GL_SAMPLES_PASSED, query);
+        } catch (Throwable t) {
+            UniversalSpaceNavigation.LOGGER.warn("[USN sky] layerBegin failed", t);
+            frameBefore = null;
+        }
+    }
+
+    /** Called at the end of a sky layer. Reports how many fragments passed and how many pixels changed. */
+    public static void layerEnd(int mode, String texture) {
+        if (!dumping || frameBefore == null) return;
+        try {
+            GL15.glEndQuery(GL15.GL_SAMPLES_PASSED);
+            int samples = GL15.glGetQueryObjecti(query, GL15.GL_QUERY_RESULT);
+            GL15.glDeleteQueries(query);
+            RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
+            int[] after = new int[main.width * main.height];
+            GL11.glReadPixels(0, 0, main.width, main.height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, after);
+            long changed = 0, r = 0, g = 0, b = 0, a = 0;
+            for (int i = 0; i < after.length; i++) {
+                if (after[i] != frameBefore[i]) {
+                    changed++;
+                    int v = after[i];
+                    r += v & 255; g += (v >> 8) & 255; b += (v >> 16) & 255; a += (v >>> 24);
+                }
+            }
+            String name = mode == 0 ? "EARTH surface" : mode == 1 ? "MOON surface" : mode == 2 ? "clouds" : mode == 3 ? "atmosphere" : mode == 4 ? "starfield" : "mode " + mode;
+            StringBuilder sb = new StringBuilder("[USN sky] LAYER ").append(name).append(" (").append(texture).append(")\n");
+            sb.append("  fragments passed=").append(samples).append(" pixels changed=").append(changed);
+            if (changed > 0) {
+                sb.append(" avg RGBA of changed=").append(r / changed).append(',').append(g / changed).append(',').append(b / changed).append(',').append(a / changed);
+            }
+            if (mode == 0 || mode == 1) sb.append('\n').append(textureInfo(texture));
+            UniversalSpaceNavigation.LOGGER.info(sb.toString());
+        } catch (Throwable t) {
+            UniversalSpaceNavigation.LOGGER.warn("[USN sky] layerEnd failed", t);
+        } finally {
+            frameBefore = null;
+        }
+    }
+
+    /** Reads the generated planet texture back and reports its size and average colour. Restores the texture binding. */
+    private static String textureInfo(String name) {
+        int saved = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
+        try {
+            Class<?> fg = Class.forName("dev.arcana.magic.fire.client.FireGeometry");
+            Object rl = fg.getMethod("texture", String.class).invoke(null, name);
+            var tex = Minecraft.getInstance().getTextureManager().getTexture((net.minecraft.resources.ResourceLocation) rl);
+            int id = tex.getId();
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, id);
+            int tw = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH);
+            int th = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
+            if (tw <= 0 || th <= 0) return "  texture " + rl + " id=" + id + " size=" + tw + "x" + th + " (empty)";
+            int[] px = new int[tw * th];
+            GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, px);
+            long r = 0, g = 0, b = 0, a = 0;
+            for (int v : px) { r += v & 255; g += (v >> 8) & 255; b += (v >> 16) & 255; a += (v >>> 24); }
+            long n = px.length;
+            return "  texture " + rl + " id=" + id + " size=" + tw + "x" + th + " avg RGBA=" + r / n + "," + g / n + "," + b / n + "," + a / n;
+        } catch (Throwable t) {
+            return "  texture lookup failed: " + t;
+        } finally {
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, saved);
         }
     }
 

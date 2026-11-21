@@ -22,3 +22,6 @@
 
 ## 0.1.6
 - Diagnostics for Arcana's space sky (client only, off by default): `/usnsky nodepth` draws the Earth and Moon surfaces without the depth test; `/usnsky dump` logs GL state and depth values around the planet draws. Config: client `[diagnostics] disableSurfaceDepthTest`.
+
+## 0.1.7
+- `/usnsky dump` now also reports, per Earth/Moon/atmosphere layer, how many fragments were drawn and how many screen pixels changed, plus the planet texture's size and average colour.

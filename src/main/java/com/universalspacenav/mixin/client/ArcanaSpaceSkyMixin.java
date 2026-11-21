@@ -24,4 +24,16 @@ public abstract class ArcanaSpaceSkyMixin {
     private static void usn$after(Matrix4f m, Vec3 centre, double radius, boolean earth, double t, float p, CallbackInfo ci) {
         SkyDiagnostics.after(earth, centre, radius);
     }
+
+    @Inject(method = "shell(Lorg/joml/Matrix4f;Lnet/minecraft/world/phys/Vec3;DDILjava/lang/String;DF)V",
+            at = @At("HEAD"), remap = false, require = 0)
+    private static void usn$layerBegin(Matrix4f m, Vec3 c, double s, double r, int mode, String tex, double t, float p, CallbackInfo ci) {
+        SkyDiagnostics.layerBegin(mode, tex);
+    }
+
+    @Inject(method = "shell(Lorg/joml/Matrix4f;Lnet/minecraft/world/phys/Vec3;DDILjava/lang/String;DF)V",
+            at = @At("RETURN"), remap = false, require = 0)
+    private static void usn$layerEnd(Matrix4f m, Vec3 c, double s, double r, int mode, String tex, double t, float p, CallbackInfo ci) {
+        SkyDiagnostics.layerEnd(mode, tex);
+    }
 }
