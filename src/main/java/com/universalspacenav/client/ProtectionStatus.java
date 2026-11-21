@@ -38,7 +38,7 @@ public final class ProtectionStatus {
 
     /** Server side. Highest-priority active protection wins. */
     public static int compute(ServerPlayer p) {
-        if (ringBreathes(p)) return RING;
+        if (ringBreathes(p) || com.universalspacenav.protect.SpaceProtection.ringProtects(p)) return RING;
         if (addonOxygenProof(p)) return ADDON;
         int pieces = suitPieces(p);
         if (pieces == 4 && fullSet(p)) return hasSuitOxygen(p) ? SUIT_OK : SUIT_EMPTY;

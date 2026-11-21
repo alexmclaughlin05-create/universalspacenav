@@ -31,3 +31,6 @@
 
 ## 0.1.9
 - Iris compatibility fix for Arcana's space sky (Earth/Moon invisible with Iris installed): Iris's fully buffered draw queue ignores endBatch(), so Arcana's planets were never drawn at the right time. With Iris present, the sky layers now use their own immediate buffer. Config: client [compat] arcanaSkyOwnBuffer (default true).
+
+## 0.1.10
+- Create: Lanterns ring life support and vacuum protection in Arcana's space (it only worked in Ad Astra space before). Costs the ring's own energy, no extra cost. Config: protection.lanternRing.enabled (default true). Not applied in Ad Astra space, so nothing is doubled.

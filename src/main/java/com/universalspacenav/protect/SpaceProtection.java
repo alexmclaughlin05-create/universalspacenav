@@ -30,10 +30,10 @@ import java.util.concurrent.ConcurrentHashMap;
  *    so a player already protected by a suit, ring, Giselle Addon, etc. never touches our reserve or energy.
  */
 public final class SpaceProtection {
-    public static final int SRC_NONE = 0, SRC_VILT = 1, SRC_MARVEL = 2, SRC_EXO = 3, SRC_HERO = 4;
+    public static final int SRC_NONE = 0, SRC_VILT = 1, SRC_MARVEL = 2, SRC_EXO = 3, SRC_HERO = 4, SRC_RING = 5;
     // Bits sent to the HUD
     public static final int B_VILT_PASSIVE = 1, B_VILT_AIR = 2, B_MARVEL_READY = 4, B_MARVEL_AIR = 8,
-            B_EXO_READY = 16, B_EXO_AIR = 32, B_HERO = 64;
+            B_EXO_READY = 16, B_EXO_AIR = 32, B_HERO = 64, B_RING = 128;
 
     private static final Map<UUID, long[]> USED = new ConcurrentHashMap<>(); // {gameTime, source}
 
@@ -312,11 +312,81 @@ public final class SpaceProtection {
             USED.put(p.getUUID(), new long[]{now, SRC_HERO});
             return true;
         }
+        if (ringProtects(p)) {
+            USED.put(p.getUUID(), new long[]{now, SRC_RING});
+            return true;
+        }
         if (isViltrumite(p) && reserve(p) > 0) {
             USED.put(p.getUUID(), new long[]{now, SRC_VILT});
             return true;
         }
         return false;
+    }
+
+    // ---------------------------------------------------------------- Create: Lanterns ring in Arcana's space
+
+    private static Method ringLit, ringWorn, ringAddEnergy, ringProfile, ringWillpower, willEfficiency, ringDrain,
+            cosmoLifeSupport, cosmoPerSecond, cosmoSettings;
+    private static Object glServer;
+    private static boolean ringLooked;
+
+    /**
+     * True when a lit Lanterns ring should supply air here: Arcana's airless space only (Ad Astra's space is
+     * already handled by the ring itself, so nothing is doubled), the ring is worn and switched on, and the
+     * Lanterns server config still has its life support enabled.
+     */
+    public static boolean ringProtects(ServerPlayer p) {
+        try {
+            if (!UsnConfig.COMMON.ring.get() || !arcanaVacuum(p.level())) return false;
+            if (!lookRing()) return false;
+            if (!(Boolean) ringLit.invoke(null, p)) return false;
+            Object settings = cosmoSettings.invoke(glServer);
+            return (Boolean) cosmoLifeSupport.invoke(settings);
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    private static boolean lookRing() {
+        if (ringLooked) return ringLit != null;
+        ringLooked = true;
+        try {
+            String base = "io.github.vidarrcrib.createlanterns.";
+            Class<?> life = Class.forName(base + "ring.LifeSupport");
+            ringLit = life.getDeclaredMethod("lit", net.minecraft.world.entity.player.Player.class);
+            ringLit.setAccessible(true);
+            Class<?> service = Class.forName(base + "ring.RingService");
+            ringWorn = service.getMethod("worn", ServerPlayer.class);
+            ringProfile = service.getMethod("profile", ServerPlayer.class);
+            Class<?> state = Class.forName(base + "ring.RingState");
+            ringAddEnergy = state.getMethod("addEnergy", float.class);
+            ringWillpower = Class.forName(base + "power.LanternProfile").getMethod("willpower");
+            willEfficiency = Class.forName(base + "power.Willpower").getMethod("efficiency", float.class);
+            ringDrain = Class.forName(base + "ring.RingPotency").getMethod("drain", ServerPlayer.class);
+            Class<?> cfg = Class.forName(base + "GLConfig");
+            glServer = cfg.getField("SERVER").get(null);
+            cosmoSettings = glServer.getClass().getMethod("cosmonautics");
+            Class<?> cs = Class.forName(base + "config.CosmonauticsSettings");
+            cosmoLifeSupport = cs.getMethod("lifeSupport");
+            cosmoPerSecond = cs.getMethod("lifeSupportPerSecond");
+        } catch (Throwable t) {
+            ringLit = null;
+        }
+        return ringLit != null;
+    }
+
+    /** Same energy cost the ring charges itself for life support (per second, scaled by willpower and potency). */
+    private static void drainRing(ServerPlayer p, int elapsed) {
+        try {
+            Object st = ringWorn.invoke(null, p);
+            if (st == null) return;
+            float perSecond = (Float) cosmoPerSecond.invoke(cosmoSettings.invoke(glServer));
+            Object profile = ringProfile.invoke(null, p);
+            float eff = (Float) willEfficiency.invoke(null, (Float) ringWillpower.invoke(profile));
+            float potency = (Float) ringDrain.invoke(null, p);
+            ringAddEnergy.invoke(st, -(perSecond / 20f) * elapsed * eff * potency);
+        } catch (Throwable ignored) {
+        }
     }
 
     /** Cold / vacuum-exposure immunity (no consumption). */
@@ -346,6 +416,10 @@ public final class SpaceProtection {
             return;
         }
         if (recent && u[1] == SRC_HERO) return; // free, no accounting
+        if (recent && u[1] == SRC_RING) {
+            drainRing(p, elapsed);
+            return;
+        }
         if (!isViltrumite(p)) return;
         int cur = reserve(p);
         if (recent && u[1] == SRC_VILT) {
@@ -378,6 +452,7 @@ public final class SpaceProtection {
             if (recent && u[1] == SRC_EXO) bits |= B_EXO_AIR;
         }
         if (UsnConfig.COMMON.hero.get() && heroListed(p)) bits |= B_HERO;
+        if (ringProtects(p)) bits |= B_RING;
         return bits;
     }
 

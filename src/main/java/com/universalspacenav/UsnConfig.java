@@ -47,6 +47,7 @@ public final class UsnConfig {
         public final ModConfigSpec.BooleanValue suppressLanterns;
         public final ModConfigSpec.BooleanValue exo;
         public final ModConfigSpec.IntValue exoEnergyPerSecond;
+        public final ModConfigSpec.BooleanValue ring;
         public final ModConfigSpec.BooleanValue hero;
         public final ModConfigSpec.ConfigValue<java.util.List<? extends String>> heroPowers;
         public final ModConfigSpec.BooleanValue heroBreathing;
@@ -117,6 +118,11 @@ public final class UsnConfig {
                     .define("enabled", true);
             exoEnergyPerSecond = b.comment("Exosuit energy (FE) used per second while supplying air. Goes through the exosuit's own energy spending, so its Cell module discount applies.")
                     .defineInRange("energyPerSecond", 20, 0, 1000000);
+            b.pop();
+            b.push("lanternRing");
+            ring = b.comment("A lit Create: Lanterns ring also gives life support and vacuum protection in Arcana's space, the same way it already does in Ad Astra's space.",
+                            "The cost is the ring's own (its cosmonautics lifeSupportPerSecond, willpower efficiency and potency); this mod adds nothing extra. Not used in Ad Astra space, where the ring already works by itself.")
+                    .define("enabled", true);
             b.pop();
             b.push("superheroPowers");
             hero = b.comment("Lets the Integrated Superheroes powers listed below receive space protection. OFF by default.")
