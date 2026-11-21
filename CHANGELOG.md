@@ -48,3 +48,6 @@
 
 ## 0.1.14
 - With a shader pack active, Arcana's atmosphere layer is not drawn (it showed as a cyan wash with stripes over all of Earth). Config compat.arcanaSkyHideAtmosphereWithShaders.
+
+## 0.1.15
+- Diagnostic only: /usnleak find searches memory (read-only, background) for what keeps old worlds and players alive and logs the reference path.

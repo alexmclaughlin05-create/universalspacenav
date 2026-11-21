@@ -123,6 +123,23 @@ public final class LeakWatch {
         UniversalSpaceNavigation.LOGGER.info("[USN leak] watching old " + kind + " #" + w.id + " (" + what + ")");
     }
 
+    /** Starts the opt-in reference search (/usnleak find). Returns a message for the player. */
+    public static String startFind() {
+        if (RefFinder.running()) return "a search is already running";
+        List<Object> targets = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+        for (Watch w : WATCHES) {
+            Object o = w.ref.get();
+            if (o != null) {
+                targets.add(o);
+                names.add("old " + w.kind + " #" + w.id + " (" + w.what + ")");
+            }
+        }
+        if (targets.isEmpty()) return "no old world or player is alive right now, nothing to search for";
+        RefFinder.start(targets, names);
+        return "searching for what holds " + targets.size() + " old object(s). Runs in the background for up to ~2.5 minutes, may use a lot of memory briefly and cause some lag. Results appear here and in latest.log";
+    }
+
     public static void requestGc() {
         UniversalSpaceNavigation.LOGGER.warn("[USN leak] running System.gc() on request; the game may pause briefly");
         System.gc();

@@ -44,6 +44,11 @@ public final class LeakWatchEvents {
                     c.getSource().sendSuccess(() -> Component.literal("[USN leak] enabled=" + LeakWatch.enabled() + "; " + LeakWatch.status()), false);
                     return 1;
                 }))
+                .then(Commands.literal("find").executes(c -> {
+                    String m = LeakWatch.startFind();
+                    c.getSource().sendSuccess(() -> Component.literal("[USN leak] " + m), false);
+                    return 1;
+                }))
                 .then(Commands.literal("gc")
                         .executes(c -> {
                             c.getSource().sendSuccess(() -> Component.literal("[USN leak] This forces a full garbage collection, which can freeze the game for a few seconds on a big heap. If you want it, run: /usnleak gc confirm"), false);
