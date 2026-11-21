@@ -57,3 +57,6 @@
 
 ## 0.1.17
 - Diagnostic only (no behaviour change): lag watch. Logs "[USN lag]" lines only when something is slow: server ticks over 150 ms, client game-thread stalls over 250 ms, GC time during them, and movement keys held without the player moving (says whether input, a freeze, or the server was the cause). `/usnlag status|reset`. Config: lagWatch.
+
+## 0.1.18
+- Diagnostic only: movement lag lines now also record velocity, collision, speed, effects, vehicle, blocks under the player and equipped items. Join-time gaps (no player yet) are no longer reported as freezes.

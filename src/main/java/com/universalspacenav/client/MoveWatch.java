@@ -42,6 +42,12 @@ public final class MoveWatch {
         long now = System.nanoTime();
         long gc = LagWatch.gcMs();
         ticks++;
+        Minecraft mc0 = Minecraft.getInstance();
+        if (mc0.player == null || mc0.level == null) {
+            lastTickNs = 0;
+            pending = false;
+            return;
+        }
         long gapMs = lastTickNs == 0 ? 0 : (now - lastTickNs) / 1_000_000;
         if (gapMs > worstGapMs) worstGapMs = gapMs;
         if (gapMs > 250) {
@@ -115,7 +121,15 @@ public final class MoveWatch {
                 + "; GC in that time " + (gc - pStartGc) + " ms; server position corrections " + (corrections - pStartCorrections)
                 + "; flying=" + p.getAbilities().flying + " fallFlying=" + p.isFallFlying() + " onGround=" + p.onGround()
                 + " inWater=" + p.isInWater() + " usingItem=" + p.isUsingItem() + " dim=" + p.level().dimension().location()
-                + " fps=" + mc.getFps());
+                + " fps=" + mc.getFps()
+                + "; velocity=" + p.getDeltaMovement() + " horizontalCollision=" + p.horizontalCollision
+                + " sneaking=" + p.isShiftKeyDown() + " sprinting=" + p.isSprinting() + " speedAttr=" + p.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED)
+                + " vehicle=" + p.getVehicle() + " blockAtFeet=" + p.level().getBlockState(p.blockPosition()).getBlock()
+                + " blockBelow=" + p.level().getBlockState(p.blockPosition().below()).getBlock()
+                + " effects=" + p.getActiveEffects().stream().map(e -> e.getEffect().getKey() == null ? "?" : e.getEffect().getKey().location().toString()).toList()
+                + " mainHand=" + p.getMainHandItem().getItem() + " chest=" + p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).getItem()
+                + " head=" + p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).getItem()
+                + " inputFwd=" + p.input.forwardImpulse + " inputLeft=" + p.input.leftImpulse + " jump=" + p.input.jumping);
     }
 
     public static String status() {
