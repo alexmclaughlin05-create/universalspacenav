@@ -38,3 +38,7 @@
 ## 0.1.11
 - Fix: Arcana Earth/Moon vanishing when a shader pack (e.g. Complementary Reimagined) is on. Iris masks colour/depth writes for shaders it does not know; USN now lets Arcana's planet shader through, only while a planet layer is drawing (config compat.arcanaSkyAllowUnknownShader).
 - /usnsky dump now also logs the active shader, Iris pipeline and Iris skip decision per draw.
+
+## 0.1.12
+- Diagnostic only, nothing is cleared: LeakWatch watches the previous world/player with weak references and logs which known fields in Arcana, Create: Lanterns and Neural Exosuit still hold them (config diagnostics.leakWatch, default on).
+- /usnleak check, /usnleak status, /usnleak gc confirm (opt-in garbage collection).

@@ -146,6 +146,8 @@ public final class UsnConfig {
         public final ModConfigSpec.BooleanValue skyNoDepth;
         public final ModConfigSpec.BooleanValue skyOwnBuffer;
         public final ModConfigSpec.BooleanValue skyIrisAllowShader;
+        public final ModConfigSpec.BooleanValue leakWatch;
+        public final ModConfigSpec.IntValue leakWatchDelay;
 
         Client(ModConfigSpec.Builder b) {
             b.push("hud");
@@ -168,6 +170,10 @@ public final class UsnConfig {
             b.push("diagnostics");
             skyNoDepth = b.comment("DIAGNOSTIC for Arcana's space sky. Draw the Earth and Moon surfaces without the depth test (nothing else changes). Also toggled in game with /usnsky nodepth.")
                     .define("disableSurfaceDepthTest", false);
+            leakWatch = b.comment("DIAGNOSTIC (read-only). Watches the previous world and player after a dimension change with weak references (which do not keep them alive) and, after a delay, logs which known mod fields in Arcana, Create: Lanterns and Neural Exosuit still point at them. Cost: two reference checks per tick. Nothing is cleared or changed. Also /usnleak check.")
+                    .define("leakWatch", true);
+            leakWatchDelay = b.comment("Seconds to wait after a dimension change before the automatic leak scan.")
+                    .defineInRange("leakWatchDelaySeconds", 10, 3, 300);
             b.pop();
         }
     }
