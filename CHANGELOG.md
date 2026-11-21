@@ -28,3 +28,6 @@
 
 ## 0.1.8
 - Sky dump also logs the GPU state at each draw inside an Arcana sky layer (vertex counts, scissor, colour mask, program link status, GL errors).
+
+## 0.1.9
+- Iris compatibility fix for Arcana's space sky (Earth/Moon invisible with Iris installed): Iris's fully buffered draw queue ignores endBatch(), so Arcana's planets were never drawn at the right time. With Iris present, the sky layers now use their own immediate buffer. Config: client [compat] arcanaSkyOwnBuffer (default true).

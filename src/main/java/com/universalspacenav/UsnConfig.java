@@ -138,6 +138,7 @@ public final class UsnConfig {
         public final ModConfigSpec.IntValue hudY;
         public final ModConfigSpec.DoubleValue hudScale;
         public final ModConfigSpec.BooleanValue skyNoDepth;
+        public final ModConfigSpec.BooleanValue skyOwnBuffer;
 
         Client(ModConfigSpec.Builder b) {
             b.push("hud");
@@ -148,6 +149,11 @@ public final class UsnConfig {
             hudX = b.comment("Pixels from the left edge.").defineInRange("x", 6, 0, 4000);
             hudY = b.comment("Pixels from the top edge.").defineInRange("y", 40, 0, 4000);
             hudScale = b.comment("Text scale.").defineInRange("scale", 1.0D, 0.5D, 3.0D);
+            b.pop();
+            b.push("compat");
+            skyOwnBuffer = b.comment("Iris compatibility for Arcana's space sky. Iris replaces the game's shared draw queue while the world renders, and that queue ignores endBatch(), so Arcana's Earth and Moon are never drawn at the right moment.",
+                            "When true (default) and Iris is installed, Arcana's planet layers are drawn through their own immediate buffer instead. No effect without Iris.")
+                    .define("arcanaSkyOwnBuffer", true);
             b.pop();
             b.push("diagnostics");
             skyNoDepth = b.comment("DIAGNOSTIC for Arcana's space sky. Draw the Earth and Moon surfaces without the depth test (nothing else changes). Also toggled in game with /usnsky nodepth.")
