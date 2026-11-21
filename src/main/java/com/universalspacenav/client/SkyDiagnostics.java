@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL14;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
@@ -70,6 +71,9 @@ public final class SkyDiagnostics {
         }
     }
 
+    /** DIAGNOSTIC: skip drawing one Arcana sky layer (0 Earth surface, 1 Moon surface, 2 clouds, 3 atmosphere, 4 starfield/sun), -1 = none. Not saved. */
+    public static volatile int skipMode = -1;
+    private static String stateBefore;
     private static int[] frameBefore;
     private static boolean inLayer;
     private static int drawsInLayer;
@@ -83,6 +87,7 @@ public final class SkyDiagnostics {
             RenderTarget main = mc.getMainRenderTarget();
             frameBefore = new int[main.width * main.height];
             GL11.glReadPixels(0, 0, main.width, main.height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, frameBefore);
+            stateBefore = stateLine();
             inLayer = true;
             drawsInLayer = 0;
             query = GL15.glGenQueries();
@@ -105,9 +110,15 @@ public final class SkyDiagnostics {
             int[] after = new int[main.width * main.height];
             GL11.glReadPixels(0, 0, main.width, main.height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, after);
             long changed = 0, r = 0, g = 0, b = 0, a = 0;
+            int w = main.width, minX = Integer.MAX_VALUE, maxX = -1, minY = Integer.MAX_VALUE, maxY = -1;
             for (int i = 0; i < after.length; i++) {
                 if (after[i] != frameBefore[i]) {
                     changed++;
+                    int px = i % w, py = i / w;
+                    if (px < minX) minX = px;
+                    if (px > maxX) maxX = px;
+                    if (py < minY) minY = py;
+                    if (py > maxY) maxY = py;
                     int v = after[i];
                     r += v & 255; g += (v >> 8) & 255; b += (v >> 16) & 255; a += (v >>> 24);
                 }
@@ -118,6 +129,15 @@ public final class SkyDiagnostics {
             if (changed > 0) {
                 sb.append(" avg RGBA of changed=").append(r / changed).append(',').append(g / changed).append(',').append(b / changed).append(',').append(a / changed);
             }
+            if (changed > 0) {
+                long box = (long) (maxX - minX + 1) * (maxY - minY + 1);
+                sb.append("\n  changed area: x ").append(minX).append("..").append(maxX).append(" of ").append(w)
+                        .append(", y(from top) ").append(main.height - 1 - maxY).append("..").append(main.height - 1 - minY).append(" of ").append(main.height)
+                        .append(", fills ").append(100 * changed / Math.max(box, 1)).append("% of its bounding box");
+            }
+            String stateAfter = stateLine();
+            sb.append("\n  GL state before layer: ").append(stateBefore).append("\n  GL state after layer:  ").append(stateAfter);
+            if (!stateAfter.equals(stateBefore)) sb.append("\n  >>> STATE CHANGED BY THIS LAYER (not restored)");
             if (mode == 0 || mode == 1) sb.append('\n').append(textureInfo(texture));
             UniversalSpaceNavigation.LOGGER.info(sb.toString());
         } catch (Throwable t) {
@@ -255,6 +275,32 @@ public final class SkyDiagnostics {
             sb.append(" pipeline=").append(pipe == null ? "none" : pipe.getClass().getSimpleName());
             sb.append(" skipThis=").append(shader.getClass().getMethod("iris$shouldSkipThis").invoke(shader));
             return sb.toString();
+        } catch (Throwable t) {
+            return "n/a (" + t.getClass().getSimpleName() + ")";
+        }
+    }
+
+    /** One line of GL state that a draw could leave behind. Read-only. */
+    private static String stateLine() {
+        try (MemoryStack st = MemoryStack.stackPush()) {
+            var cm = st.malloc(4);
+            GL11.glGetBooleanv(GL11.GL_COLOR_WRITEMASK, cm);
+            String locked = "n/a";
+            try {
+                locked = String.valueOf(Class.forName("net.irisshaders.iris.gl.blending.DepthColorStorage").getMethod("isDepthColorLocked").invoke(null));
+            } catch (Throwable ignored) {
+            }
+            return "fbo=" + GL11.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING)
+                    + " drawBuffer=0x" + Integer.toHexString(GL11.glGetInteger(GL11.GL_DRAW_BUFFER))
+                    + " colorMask=" + cm.get(0) + cm.get(1) + cm.get(2) + cm.get(3)
+                    + " depthMask=" + GL11.glGetBoolean(GL11.GL_DEPTH_WRITEMASK)
+                    + " depthTest=" + GL11.glIsEnabled(GL11.GL_DEPTH_TEST)
+                    + " depthFunc=0x" + Integer.toHexString(GL11.glGetInteger(GL11.GL_DEPTH_FUNC))
+                    + " blend=" + GL11.glIsEnabled(GL11.GL_BLEND)
+                    + " blendFunc=0x" + Integer.toHexString(GL11.glGetInteger(GL14.GL_BLEND_SRC_RGB)) + "/0x" + Integer.toHexString(GL11.glGetInteger(GL14.GL_BLEND_DST_RGB))
+                    + " cull=" + GL11.glIsEnabled(GL11.GL_CULL_FACE)
+                    + " program=" + GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM)
+                    + " irisDepthColorLocked=" + locked;
         } catch (Throwable t) {
             return "n/a (" + t.getClass().getSimpleName() + ")";
         }

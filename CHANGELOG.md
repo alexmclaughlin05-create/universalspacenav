@@ -42,3 +42,6 @@
 ## 0.1.12
 - Diagnostic only, nothing is cleared: LeakWatch watches the previous world/player with weak references and logs which known fields in Arcana, Create: Lanterns and Neural Exosuit still hold them (config diagnostics.leakWatch, default on).
 - /usnleak check, /usnleak status, /usnleak gc confirm (opt-in garbage collection).
+
+## 0.1.13
+- Diagnostics only: /usnsky skip <0-4|off> leaves one Arcana sky layer out, /usnsky allow <on|off> toggles the Iris override, /usnsky dump now also logs per-layer GL state before/after and the screen area each layer changed.

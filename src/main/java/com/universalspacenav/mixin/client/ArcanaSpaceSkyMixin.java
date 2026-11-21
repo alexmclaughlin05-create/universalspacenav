@@ -63,4 +63,16 @@ public abstract class ArcanaSpaceSkyMixin {
         SkyBuffers.exit();
         if (SkyBuffers.active()) SkyBuffers.extension(false);
     }
+
+    /** DIAGNOSTIC (/usnsky skip): leave one layer out to see which layer produces an artifact. Off by default. */
+    @Inject(method = "shell(Lorg/joml/Matrix4f;Lnet/minecraft/world/phys/Vec3;DDILjava/lang/String;DF)V",
+            at = @At("HEAD"), cancellable = true, remap = false, require = 0)
+    private static void usn$skip(Matrix4f m, Vec3 c, double s, double r, int mode, String tex, double t, float p, CallbackInfo ci) {
+        if (SkyDiagnostics.skipMode == mode) {
+            SkyBuffers.exit();
+            if (SkyBuffers.active()) SkyBuffers.extension(false);
+            SkyDiagnostics.layerEnd(mode, tex);
+            ci.cancel();
+        }
+    }
 }
