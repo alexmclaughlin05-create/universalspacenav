@@ -32,8 +32,8 @@ import java.util.zip.ZipFile;
  */
 public final class RefFinder {
     private static volatile boolean running;
-    private static final int MAX_NODES = 1_500_000;
-    private static final int MAX_DEPTH = 12;
+    private static final int MAX_NODES = 3_500_000;
+    private static final int MAX_DEPTH = 16;
     private static final long TIME_BUDGET_MS = 150_000;
 
     private RefFinder() {

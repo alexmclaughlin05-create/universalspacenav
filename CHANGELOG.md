@@ -76,3 +76,6 @@
 ## 0.1.23
 - Leak fix: Celestisynth has two more player lists (otherAnimationData, mirroredAnimationData) that kept old worlds alive; stale entries are now released too.
 - /usnleak find no longer reports weak maps wrapped by synchronizedMap (Fauna Engine false alarm).
+
+## 0.1.24
+- /usnleak find searches deeper (3.5 million objects) so it can trace the last old worlds. Diagnostic only.
