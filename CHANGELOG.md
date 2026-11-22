@@ -72,3 +72,7 @@
 
 ## 0.1.22
 - Log-flood fix: GeckoLib's "Unable to find animation" error (Creeper Overhaul dripstone creeper, Ars Elemental flashjack) no longer prints a stack trace on every frame. First message is kept, repeats are shown at most once a minute with a count. Config: compat.quietGeckolibMissingAnimation (client, default on). Does not change how mobs look.
+
+## 0.1.23
+- Leak fix: Celestisynth has two more player lists (otherAnimationData, mirroredAnimationData) that kept old worlds alive; stale entries are now released too.
+- /usnleak find no longer reports weak maps wrapped by synchronizedMap (Fauna Engine false alarm).

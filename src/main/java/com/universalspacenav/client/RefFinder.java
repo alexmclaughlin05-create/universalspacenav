@@ -144,9 +144,19 @@ public final class RefFinder {
                         continue;
                     } else if (o instanceof Map<?, ?> m) {
                         int k = 0;
+                        boolean weakKeys = m instanceof java.util.WeakHashMap;
+                        if (!weakKeys && c.getName().startsWith("java.util.Collections$")) {
+                            // synchronized/unmodifiable wrappers: look at the real map inside
+                            try {
+                                Field wf = c.getDeclaredField("m");
+                                Object inner = unsafe().getObject(o, unsafe().objectFieldOffset(wf));
+                                weakKeys = inner instanceof java.util.WeakHashMap;
+                            } catch (Throwable ignore) {
+                            }
+                        }
                         for (Map.Entry<?, ?> e : new ArrayList<>(m.entrySet())) {
                             if (k++ > 20000) break;
-                            if (!(m instanceof java.util.WeakHashMap)) push(e.getKey(), n, "{key}", seen, queue);
+                            if (!weakKeys) push(e.getKey(), n, "{key}", seen, queue);
                             push(e.getValue(), n, "{value of " + brief(e.getKey()) + "}", seen, queue);
                         }
                     } else if (o instanceof Iterable<?> it && c.getName().startsWith("java.util.")) {
