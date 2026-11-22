@@ -23,6 +23,7 @@ public final class LeakWatchEvents {
             LeakWatch.tick();
             LeakFix.tick();
             MoveWatch.tick();
+            CreativeRefresh.tick();
         } catch (Throwable t) {
             UniversalSpaceNavigation.LOGGER.warn("[USN leak] tick failed", t);
         }

@@ -91,3 +91,6 @@
 
 ## 0.1.28
 - Server-join crash fix: joining a dedicated server disconnected with "Network Protocol Error" because Pastel asked Apothic Enchanting for an enchantment level before enchantments had loaded while the creative tabs were being built. That one early question now answers 0 and the login finishes.
+
+## 0.1.29
+- Server fix: Iron Jetpacks' creative tab and JEI list missed every jetpack on a dedicated server because the server's jetpack list arrived after the game built the tabs. The creative tabs are now rebuilt once when the list arrives.
