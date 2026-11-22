@@ -32,9 +32,9 @@ import java.util.zip.ZipFile;
  */
 public final class RefFinder {
     private static volatile boolean running;
-    private static final int MAX_NODES = 3_500_000;
-    private static final int MAX_DEPTH = 16;
-    private static final long TIME_BUDGET_MS = 150_000;
+    private static final int MAX_NODES = 9_000_000;
+    private static final int MAX_DEPTH = 24;
+    private static final long TIME_BUDGET_MS = 300_000;
 
     private RefFinder() {
     }
@@ -122,6 +122,10 @@ public final class RefFinder {
             Map<Class<?>, String[]> nameCache = new HashMap<>();
             long visited = 0;
             while (!queue.isEmpty() && visited < MAX_NODES && System.currentTimeMillis() - t0 < TIME_BUDGET_MS) {
+                if ((visited & 0xFFFF) == 0 && lowMemory()) {
+                    say("find: stopping early, the game is running low on memory");
+                    break;
+                }
                 Node n = queue.poll();
                 visited++;
                 Object o = n.obj;
@@ -166,11 +170,28 @@ public final class RefFinder {
                             push(e, n, "[" + (k - 1) + "]", seen, queue);
                         }
                     } else if (o instanceof Reference<?> ref) {
-                        // weak/soft references do not keep an object alive: do not follow them
+                        // weak/soft references do not keep an object alive: do not follow them,
+                        // except a thread-local slot, whose VALUE is strongly held by the thread
+                        if (c.getName().equals("java.lang.ThreadLocal$ThreadLocalMap$Entry")) {
+                            Field vf = c.getDeclaredField("value");
+                            push(u.getObject(o, u.objectFieldOffset(vf)), n, ".threadLocalValue", seen, queue);
+                        }
                     } else if (o instanceof AtomicReference<?> ar) {
                         push(ar.get(), n, ".get()", seen, queue);
                     } else if (o instanceof Optional<?> op) {
                         push(op.orElse(null), n, ".get()", seen, queue);
+                    } else if (c.isHidden()) {
+                        // lambdas / generated classes: read captured values through reflection
+                        for (Class<?> k = c; k != null && k != Object.class; k = k.getSuperclass()) {
+                            for (Field f : k.getDeclaredFields()) {
+                                if (Modifier.isStatic(f.getModifiers()) || f.getType().isPrimitive()) continue;
+                                try {
+                                    f.setAccessible(true);
+                                    push(f.get(o), n, "." + f.getName() + " (lambda " + shortName(c) + ")", seen, queue);
+                                } catch (Throwable ignore) {
+                                }
+                            }
+                        }
                     } else {
                         long[] offs = offCache.get(c);
                         String[] nms = nameCache.get(c);
@@ -238,15 +259,20 @@ public final class RefFinder {
         queue.add(n);
     }
 
+    private static boolean lowMemory() {
+        Runtime r = Runtime.getRuntime();
+        return r.maxMemory() - (r.totalMemory() - r.freeMemory()) < 450L * 1024 * 1024;
+    }
+
     private static boolean leaf(Class<?> c) {
         if (c.isPrimitive() || c.isEnum() || c == String.class || Number.class.isAssignableFrom(c) || c == Boolean.class
                 || c == Class.class || c == Character.class) return true;
         String n = c.getName();
-        return n.startsWith("java.lang.invoke.") || n.startsWith("java.lang.Thread") || n.startsWith("java.lang.ClassLoader")
+        return n.startsWith("java.lang.invoke.") || n.startsWith("java.lang.ThreadGroup") || n.startsWith("java.lang.ClassLoader")
                 || n.startsWith("java.lang.Module") || n.startsWith("jdk.") || n.startsWith("sun.")
                 || n.startsWith("net.minecraft.resources.ResourceLocation") || n.startsWith("net.minecraft.core.MappedRegistry")
                 || n.startsWith("net.minecraft.core.RegistryAccess") || n.startsWith("cpw.mods.") || n.endsWith("ClassLoader")
-                || n.startsWith("java.nio.") || n.startsWith("io.netty.");
+                || n.startsWith("java.nio.") || n.startsWith("io.netty.buffer") || n.startsWith("io.netty.util.internal");
     }
 
     private static String shortName(Class<?> c) {

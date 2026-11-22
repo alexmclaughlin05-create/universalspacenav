@@ -126,6 +126,9 @@ public final class LeakWatch {
     /** Starts the opt-in reference search (/usnleak find). Returns a message for the player. */
     public static String startFind() {
         if (RefFinder.running()) return "a search is already running";
+        UniversalSpaceNavigation.LOGGER.info("[USN leak] find: running a full memory cleanup first, so only truly stuck objects are searched for");
+        System.gc();
+        System.gc();
         List<Object> targets = new ArrayList<>();
         List<String> names = new ArrayList<>();
         for (Watch w : WATCHES) {
@@ -135,9 +138,9 @@ public final class LeakWatch {
                 names.add("old " + w.kind + " #" + w.id + " (" + w.what + ")");
             }
         }
-        if (targets.isEmpty()) return "no old world or player is alive right now, nothing to search for";
+        if (targets.isEmpty()) return "good news: after a full memory cleanup no old world or player is left alive, so nothing is leaking right now";
         RefFinder.start(targets, names);
-        return "searching for what holds " + targets.size() + " old object(s). Runs in the background for up to ~2.5 minutes, may use a lot of memory briefly and cause some lag. Results appear here and in latest.log";
+        return "searching for what holds " + targets.size() + " old object(s). Runs in the background for up to ~5 minutes, may use a lot of memory briefly and cause some lag. Results appear here and in latest.log";
     }
 
     public static void requestGc() {

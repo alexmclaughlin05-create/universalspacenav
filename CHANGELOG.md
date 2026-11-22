@@ -79,3 +79,6 @@
 
 ## 0.1.24
 - /usnleak find searches deeper (3.5 million objects) so it can trace the last old worlds. Diagnostic only.
+
+## 0.1.25
+- /usnleak find: runs a full memory cleanup first (so objects that were just not collected yet are not reported), then searches much deeper and also through threads, thread-local data, lambdas and network tasks. Stops early if memory gets low. Diagnostic only.
