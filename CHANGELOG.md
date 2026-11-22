@@ -69,3 +69,6 @@
 
 ## 0.1.21
 - Join-time fix: while JEI Stuff scans villager trades at world join, map trades (Wan Ancient Beasts, Alex's Caves, Arcana) no longer run a slow structure search per test. Only active when JEI Stuff is on the call stack; real trades are untouched. Works on a dedicated server too. Config: compat.jeiStuffSkipMapSearch (common config, default on).
+
+## 0.1.22
+- Log-flood fix: GeckoLib's "Unable to find animation" error (Creeper Overhaul dripstone creeper, Ars Elemental flashjack) no longer prints a stack trace on every frame. First message is kept, repeats are shown at most once a minute with a count. Config: compat.quietGeckolibMissingAnimation (client, default on). Does not change how mobs look.
