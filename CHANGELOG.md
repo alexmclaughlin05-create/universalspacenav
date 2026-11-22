@@ -85,3 +85,6 @@
 
 ## 0.1.26
 - Leak fix: the Morph mod kept the previous (old) player and world alive in its hand renderer; that stale reference is now released.
+
+## 0.1.27
+- Crash fix: Iron's Lib player statues no longer crash the game when GeckoLib rejected their pose animation file at startup; the statue is drawn in its default pose and one warning is logged.

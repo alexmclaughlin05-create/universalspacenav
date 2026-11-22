@@ -18,6 +18,7 @@
     "client.IrisAllowUnknownShaderMixin",
     "client.ServerCorrectionMixin",
     "client.GeckoMissingAnimationQuietMixin",
+    "client.IronsLibStatueCrashMixin",
     "client.RenderTypeDrawProbeMixin"
   ]
 }

@@ -153,6 +153,7 @@ public final class UsnConfig {
         public final ModConfigSpec.BooleanValue leakFix;
         public final ModConfigSpec.BooleanValue lagWatch;
         public final ModConfigSpec.BooleanValue quietGeckoMissing;
+        public final ModConfigSpec.BooleanValue statueFix;
         public final ModConfigSpec.BooleanValue leakWatch;
         public final ModConfigSpec.IntValue leakWatchDelay;
 
@@ -182,6 +183,8 @@ public final class UsnConfig {
                     .define("disableSurfaceDepthTest", false);
             quietGeckoMissing = b.comment("Stops GeckoLib's 'Unable to find animation' error from flooding the log every frame (Creeper Overhaul dripstone creeper, Ars Elemental flashjack). Shows the first message, then at most one a minute. Does not change how mobs look.")
                     .define("compat.quietGeckolibMissingAnimation", true);
+            statueFix = b.comment("Crash fix. If the Iron's Lib player statue pose animation was rejected by GeckoLib at startup, draw statues in their default pose instead of crashing the game.")
+                    .define("compat.ironsLibStatueCrashFix", true);
             lagWatch = b.comment("DIAGNOSTIC (read-only, writes to the log only when something is slow). Logs server ticks over 150 ms, game-thread stalls over 250 ms, garbage-collection time during them, and movement keys that were held but did not move the player (with where the delay happened). Also /usnlag status.")
                     .define("lagWatch", true);
             leakFix = b.comment("Memory leak workaround. Celestisynth keeps every player it ever animated in a permanent list, and Arcana's MobCasterClient keeps the last world it saw; both stop old worlds and players from being freed after dimension changes.",
