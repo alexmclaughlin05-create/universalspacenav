@@ -154,6 +154,7 @@ public final class UsnConfig {
         public final ModConfigSpec.BooleanValue lagWatch;
         public final ModConfigSpec.BooleanValue quietGeckoMissing;
         public final ModConfigSpec.BooleanValue statueFix;
+        public final ModConfigSpec.BooleanValue pastelLoginFix;
         public final ModConfigSpec.BooleanValue leakWatch;
         public final ModConfigSpec.IntValue leakWatchDelay;
 
@@ -185,6 +186,8 @@ public final class UsnConfig {
                     .define("compat.quietGeckolibMissingAnimation", true);
             statueFix = b.comment("Crash fix. If the Iron's Lib player statue pose animation was rejected by GeckoLib at startup, draw statues in their default pose instead of crashing the game.")
                     .define("compat.ironsLibStatueCrashFix", true);
+            pastelLoginFix = b.comment("Server-join crash fix. Pastel's Knowledge Gem asks Apothic Enchanting for an enchantment level before enchantments are loaded when you join a server, which disconnects you with 'Network Protocol Error'. Answers level 0 for that early question only.")
+                    .define("compat.pastelServerJoinFix", true);
             lagWatch = b.comment("DIAGNOSTIC (read-only, writes to the log only when something is slow). Logs server ticks over 150 ms, game-thread stalls over 250 ms, garbage-collection time during them, and movement keys that were held but did not move the player (with where the delay happened). Also /usnlag status.")
                     .define("lagWatch", true);
             leakFix = b.comment("Memory leak workaround. Celestisynth keeps every player it ever animated in a permanent list, and Arcana's MobCasterClient keeps the last world it saw; both stop old worlds and players from being freed after dimension changes.",

@@ -19,6 +19,7 @@
     "client.ServerCorrectionMixin",
     "client.GeckoMissingAnimationQuietMixin",
     "client.IronsLibStatueCrashMixin",
+    "client.PastelEnchantLoginMixin",
     "client.RenderTypeDrawProbeMixin"
   ]
 }

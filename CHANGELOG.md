@@ -88,3 +88,6 @@
 
 ## 0.1.27
 - Crash fix: Iron's Lib player statues no longer crash the game when GeckoLib rejected their pose animation file at startup; the statue is drawn in its default pose and one warning is logged.
+
+## 0.1.28
+- Server-join crash fix: joining a dedicated server disconnected with "Network Protocol Error" because Pastel asked Apothic Enchanting for an enchantment level before enchantments had loaded while the creative tabs were being built. That one early question now answers 0 and the login finishes.
