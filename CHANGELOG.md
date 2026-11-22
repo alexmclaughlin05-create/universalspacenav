@@ -94,3 +94,6 @@
 
 ## 0.1.29
 - Server fix: Iron Jetpacks' creative tab and JEI list missed every jetpack on a dedicated server because the server's jetpack list arrived after the game built the tabs. The creative tabs are now rebuilt once when the list arrives.
+
+## 0.1.30
+- Creative tabs: the 0.1.29 rebuild was skipped by the game/ModernFix cache ("nothing changed"). Now forces a real rebuild (twice with different permission flags), refreshes the creative search box, and repeats once ~5 s after joining any world so late server data (Iron Jetpacks, Gateways to Eternity, ...) shows up.

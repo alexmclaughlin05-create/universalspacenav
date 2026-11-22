@@ -3,7 +3,7 @@ plugins {
     id 'net.neoforged.moddev' version '2.0.78'
 }
 
-version = '0.1.29'
+version = '0.1.30'
 group = 'com.universalspacenav'
 
 base {
