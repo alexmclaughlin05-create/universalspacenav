@@ -82,3 +82,6 @@
 
 ## 0.1.25
 - /usnleak find: runs a full memory cleanup first (so objects that were just not collected yet are not reported), then searches much deeper and also through threads, thread-local data, lambdas and network tasks. Stops early if memory gets low. Diagnostic only.
+
+## 0.1.26
+- Leak fix: the Morph mod kept the previous (old) player and world alive in its hand renderer; that stale reference is now released.

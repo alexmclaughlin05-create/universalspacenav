@@ -25,6 +25,9 @@ public final class LeakFix {
     private static Map<Object, Object> otherData;
     private static Map<Object, Object> mirroredData;
     private static Field mobCasterLevel;
+    private static Field handInstance;
+    private static Field handLastInfo;
+    private static long clearedMorph;
     private static boolean broken;
     private static int ticks;
     private static long clearedPlayers;
@@ -46,6 +49,26 @@ public final class LeakFix {
             clean(animationData, me, cur);
             clean(otherData, me, cur);
             clean(mirroredData, me, cur);
+            if (handInstance != null) {
+                Object hh = handInstance.get(null);
+                Object info = hh == null ? null : handLastInfo.get(hh);
+                if (info != null) {
+                    Object pl = null;
+                    for (Class<?> k = info.getClass(); k != null && pl == null && k != Object.class; k = k.getSuperclass()) {
+                        try {
+                            Field pf = k.getDeclaredField("player");
+                            pf.setAccessible(true);
+                            pl = pf.get(info);
+                        } catch (NoSuchFieldException ignore) {
+                        }
+                    }
+                    if (pl instanceof net.minecraft.world.entity.Entity e && e != me && (e.isRemoved() || e.level() != cur)) {
+                        handLastInfo.set(hh, null);
+                        clearedMorph++;
+                        UniversalSpaceNavigation.LOGGER.info("[USN leakfix] Morph: released a stale player (total " + clearedMorph + ")");
+                    }
+                }
+            }
             if (mobCasterLevel != null) {
                 Object v = mobCasterLevel.get(null);
                 if (v != null && v != cur) {
@@ -102,6 +125,20 @@ public final class LeakFix {
             // not installed
         } catch (Throwable t) {
             UniversalSpaceNavigation.LOGGER.warn("[USN leakfix] Celestisynth list not usable: " + t);
+        }
+        try {
+            Class<?> c = Class.forName("com.craisinlord.morph.client.render.hand.HandHandler", false, cl);
+            Field fi = c.getDeclaredField("instance");
+            Field fl = c.getDeclaredField("lastMorphInfo");
+            fi.setAccessible(true);
+            fl.setAccessible(true);
+            handInstance = fi;
+            handLastInfo = fl;
+            UniversalSpaceNavigation.LOGGER.info("[USN leakfix] Morph hand renderer found");
+        } catch (ClassNotFoundException e) {
+            // not installed
+        } catch (Throwable t) {
+            UniversalSpaceNavigation.LOGGER.warn("[USN leakfix] Morph not usable: " + t);
         }
         try {
             Class<?> c = Class.forName("dev.arcana.magic.mobspells.client.MobCasterClient", false, cl);
