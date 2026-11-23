@@ -21,6 +21,7 @@
     "client.IronsLibStatueCrashMixin",
     "client.PastelEnchantLoginMixin",
     "client.IronJetpacksLateSyncMixin",
+    "client.MarvelBraceletCrashMixin",
     "client.RenderTypeDrawProbeMixin"
   ]
 }

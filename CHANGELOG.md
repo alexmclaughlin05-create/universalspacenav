@@ -97,3 +97,6 @@
 
 ## 0.1.30
 - Creative tabs: the 0.1.29 rebuild was skipped by the game/ModernFix cache ("nothing changed"). Now forces a real rebuild (twice with different permission flags), refreshes the creative search box, and repeats once ~5 s after joining any world so late server data (Iron Jetpacks, Gateways to Eternity, ...) shows up.
+
+## 0.1.31
+- Crash fix: Marvel Legacy drew your bracelet Curios slot in first person by casting it to its own type, so wearing another mod's bracelet (Reliquified Artifacts' Onion Ring) crashed the game (ClassCastException in PlayerRenderer). It now sees an empty slot for bracelets that are not its own. Config: compat.marvelLegacyBraceletFix.
