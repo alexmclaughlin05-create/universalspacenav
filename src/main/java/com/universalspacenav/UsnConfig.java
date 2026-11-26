@@ -157,6 +157,7 @@ public final class UsnConfig {
         public final ModConfigSpec.BooleanValue pastelLoginFix;
         public final ModConfigSpec.BooleanValue ironJetpacksTabFix;
         public final ModConfigSpec.BooleanValue marvelBraceletFix;
+        public final ModConfigSpec.BooleanValue entityDataMismatchFix;
         public final ModConfigSpec.BooleanValue leakWatch;
         public final ModConfigSpec.IntValue leakWatchDelay;
 
@@ -194,6 +195,8 @@ public final class UsnConfig {
                     .define("compat.ironJetpacksCreativeTabFix", true);
             marvelBraceletFix = b.comment("Crash fix. Marvel Legacy casts whatever is in your bracelet Curios slot to its own type when drawing your hand, so another mod's bracelet (Reliquified Artifacts' Onion Ring) crashes the game. Makes Marvel Legacy ignore bracelets that are not its own.")
                     .define("compat.marvelLegacyBraceletFix", true);
+            entityDataMismatchFix = b.comment("Disconnect fix. When the server sends one hidden mob value of a different type than the slot the game has for it (error 'Invalid entity data item type for field N'), skip that one value instead of disconnecting you. Happens when several mods add hidden fields to every creature and the slot order differs between client and server.")
+                    .define("compat.entityDataMismatchFix", true);
             lagWatch = b.comment("DIAGNOSTIC (read-only, writes to the log only when something is slow). Logs server ticks over 150 ms, game-thread stalls over 250 ms, garbage-collection time during them, and movement keys that were held but did not move the player (with where the delay happened). Also /usnlag status.")
                     .define("lagWatch", true);
             leakFix = b.comment("Memory leak workaround. Celestisynth keeps every player it ever animated in a permanent list, and Arcana's MobCasterClient keeps the last world it saw; both stop old worlds and players from being freed after dimension changes.",

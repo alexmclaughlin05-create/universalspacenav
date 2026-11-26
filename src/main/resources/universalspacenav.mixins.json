@@ -22,6 +22,7 @@
     "client.PastelEnchantLoginMixin",
     "client.IronJetpacksLateSyncMixin",
     "client.MarvelBraceletCrashMixin",
+    "client.EntityDataMismatchMixin",
     "client.RenderTypeDrawProbeMixin"
   ]
 }

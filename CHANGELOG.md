@@ -100,3 +100,6 @@
 
 ## 0.1.31
 - Crash fix: Marvel Legacy drew your bracelet Curios slot in first person by casting it to its own type, so wearing another mod's bracelet (Reliquified Artifacts' Onion Ring) crashed the game (ClassCastException in PlayerRenderer). It now sees an empty slot for bracelets that are not its own. Config: compat.marvelLegacyBraceletFix.
+
+## 0.1.32
+- Client fix: when the server sends one hidden mob value of the wrong type for its slot ("Invalid entity data item type for field 15"), skip that value and log it instead of disconnecting. Config: compat.entityDataMismatchFix. Client only.
